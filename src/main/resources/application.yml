@@ -20,3 +20,8 @@ spring:
     default-schema: intershop
     parameters:
       schemaName: intershop
+
+image-dir: images
+app-base-dir: user.dir
+clear-upload-dir: false
+default-image-path: static/default_image.png
