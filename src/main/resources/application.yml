@@ -1,0 +1,20 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: intershop
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    password: yandex
+    username: yandex
+    url: jdbc:postgresql://localhost:5438/yandex
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:/db/changelog/rootChangeLog.xml
+    default-schema: intershop
+    parameters:
+      schemaName: intershop
