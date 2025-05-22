@@ -52,12 +52,11 @@
                 <table>
                     <tr>
                         <td>
-                            <a th:href="${'/items/'+item.id()}">
+                            <a th:href="@{{contextPath}/items/{id}
+                            (contextPath=${@environment.getProperty('server.servlet.context-path')})
+                            (id=${item.id()})}">
                                 <img width="300" height="300"
-                                     th:src="@{http://localhost:{port}/{contextPath}/image/{id}
-                                     (port=${@environment.getProperty('server.port')})
-                                     (contextPath=${@environment.getProperty('server.servlet.context-path')})
-                                     (id=${item.id()})}">
+                                     th:src="${'http://localhost:9090/intershop/image/'+item.id()}">
                             </a>
                         </td>
                     </tr>
