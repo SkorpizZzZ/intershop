@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="createItemSeq" author="ilgiznigmatullin (generated)">
+        <preConditions>
+            <and>
+                <not>
+                    <sequenceExists sequenceName="item_sequence" schemaName="${schemaName}"/>
+                </not>
+            </and>
+        </preConditions>
+        <createSequence
+                sequenceName="item_sequence"
+                startValue="1"
+                incrementBy="1"
+                minValue="1"
+                maxValue="9223372036854775807"
+                cycle="false"
+                cacheSize="1"
+                schemaName="${schemaName}"/>
+        <rollback>
+            <dropSequence sequenceName="item_sequence" schemaName="${schemaName}"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

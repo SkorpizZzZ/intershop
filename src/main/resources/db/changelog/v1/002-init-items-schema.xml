@@ -4,31 +4,32 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
-    <changeSet id="1746817629879-1" author="ilgiznigmatullin (generated)">
+    <changeSet id="createItemsTable" author="ilgiznigmatullin (generated)">
         <preConditions>
             <and>
                 <not>
-                    <tableExists tableName="users" schemaName="${schemaName}" />
+                    <tableExists tableName="items" schemaName="${schemaName}" />
                 </not>
                 <dbms type="postgresql"/>
             </and>
         </preConditions>
-        <createTable tableName="users" schemaName="${schemaName}">
+        <createTable tableName="items" schemaName="${schemaName}">
             <column name="id" type="bigint">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="username" type="varchar(255)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-            <column name="password" type="varchar(255)">
+            <column name="title" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="email" type="varchar(255)">
-                <constraints nullable="false" unique="true"/>
+            <column name="price" type="numeric(19,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(255)"/>
+            <column name="count" type="bigint" defaultValue="0">
+                <constraints nullable="false"/>
             </column>
         </createTable>
         <rollback>
-            <dropTable tableName="users" schemaName="${schemaName}"/>
+            <dropTable tableName="items" schemaName="${schemaName}"/>
         </rollback>
     </changeSet>
 </databaseChangeLog>

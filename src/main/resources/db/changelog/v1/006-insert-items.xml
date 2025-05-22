@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="insert-items" author="ilgiznigmatullin">
+        <preConditions>
+            <tableExists tableName="images" schemaName="${schemaName}"/>
+            <tableExists tableName="items" schemaName="${schemaName}"/>
+        </preConditions>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Ботинки"/>
+            <column name="price" value="4999.99"/>
+            <column name="description" value="Стильные кожаные ботинки"/>
+            <column name="count" value="10"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Футболка"/>
+            <column name="price" value="1999.99"/>
+            <column name="description" value="Хлопковая футболка"/>
+            <column name="count" value="15"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Игрушечный самолетик"/>
+            <column name="price" value="499.99"/>
+            <column name="description" value="Детский игрушечный самолетик"/>
+            <column name="count" value="15"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Игрушечная машинка"/>
+            <column name="price" value="999.99"/>
+            <column name="description" value="Детская игрушечная машинка"/>
+            <column name="count" value="8"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Шорты"/>
+            <column name="price" value="2499.99"/>
+            <column name="description" value="Летние шорты"/>
+            <column name="count" value="8"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Галстук"/>
+            <column name="price" value="999.99"/>
+            <column name="description" value="Шелковый галстук"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Штаны"/>
+            <column name="price" value="2999.99"/>
+            <column name="description" value="Мужские черные штаны"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Джинсы"/>
+            <column name="price" value="5999.99"/>
+            <column name="description" value="Мужские джинсы"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Кроссовки"/>
+            <column name="price" value="5999.99"/>
+            <column name="description" value="Белые кроссовки"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Худи"/>
+            <column name="price" value="5999.99"/>
+            <column name="description" value="Мужское худи"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Куртка"/>
+            <column name="price" value="11999.99"/>
+            <column name="description" value="Мужская куртка"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Кукла"/>
+            <column name="price" value="299.99"/>
+            <column name="description" value="Детская куколка"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Кружка"/>
+            <column name="price" value="99.99"/>
+            <column name="description" value="Синяя кружка"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Лампа"/>
+            <column name="price" value="1599.99"/>
+            <column name="description" value="Лампа настрольная"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Телефон"/>
+            <column name="price" value="29999.99"/>
+            <column name="description" value="Мобильный телефон"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Стол"/>
+            <column name="price" value="20999.99"/>
+            <column name="description" value="Кухонный стол"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <insert tableName="items" schemaName="${schemaName}">
+            <column name="id" valueSequenceNext="item_sequence"/>
+            <column name="title" value="Стул"/>
+            <column name="price" value="3999.99"/>
+            <column name="description" value="Кухонный стул"/>
+            <column name="count" value="20"/>
+        </insert>
+
+        <rollback>
+            <delete tableName="items" schemaName="${schemaName}">
+                <where>title IN ('Ботинки',
+                    'Футболка',
+                    'Шорты',
+                    'Галстук',
+                    'Игрушечный самолетик',
+                    'Игрушечная машинка',
+                    'Штаны',
+                    'Джинсы',
+                    'Кроссовки',
+                    'Худи',
+                    'Куртка',
+                    'Кукла',
+                    'Кружка',
+                    'Лампа',
+                    'Стол',
+                    'Телефон',
+                    'Стол')
+                </where>
+            </delete>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
