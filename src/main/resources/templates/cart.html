@@ -6,10 +6,12 @@
 </head>
 
 <body>
-<a href="/orders" style="float:right;">
+<a th:href="@{{contextPath}/orders
+            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
     <b>ЗАКАЗЫ &cudarrr;</b>
 </a>
-<a href="/main/items" style="float:right;">
+<a th:href="@{{contextPath}/main
+            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
     <b>ГЛАВНАЯ &cudarrr;</b>
 </a>
 <table style="width:70%;margin-left:auto;margin-right:auto;">
@@ -18,23 +20,29 @@
             <table>
                 <tr>
                     <td>
-                        <img width="300" height="300" th:src="${'http://localhost:8080/'+item.getImgPath()}">
+                        <img width="300" height="300"
+                             th:src="@{http://localhost:{port}{contextPath}/image/{imageName}
+                                     (port=${@environment.getProperty('server.port')},
+                                     contextPath=${@environment.getProperty('server.servlet.context-path')},
+                                     imageName=${item.imageName()})}">
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <b th:text="${item.getTitle()}"></b>
+                        <b th:text="${item.title()}"></b>
                     </td>
                     <td>
-                        <b th:text="${item.getPrice()}+' руб.'"></b>
+                        <b th:text="${item.price()}+' руб.'"></b>
                     </td>
                 </tr>
-                <tr><td th:text="${item.getDescription()}"></td></tr>
+                <tr><td th:text="${item.description()}"></td></tr>
                 <tr>
                     <td>
-                        <form th:action="${'/cart/items/'+item.getId()}" method="post">
+                        <form th:action="@{{contextPath}/cart/items/{id}
+                            (contextPath=${@environment.getProperty('server.servlet.context-path')},
+                            id=${item.id()})}" method="post">
                             <button name="action" value="minus">-</button>
-                            <span th:text="${item.getCount()}"></span>
+                            <span th:text="${item.count()}"></span>
                             <button name="action" value="plus">+</button>
                             <button name="action" value="delete" style="float:right;">&cross;</button>
                         </form>
@@ -50,7 +58,9 @@
     </tr>
     <tr>
         <td style="text-align:right">
-            <form action="/buy" method="post" th:if="${!empty}">
+            <form th:action="@{{contextPath}/orders/buy
+                            (contextPath=${@environment.getProperty('server.servlet.context-path')})}"
+                  method="post" th:if="${total.compareTo(0) != 0}">
                 <button>Купить</button>
             </form>
         </td>

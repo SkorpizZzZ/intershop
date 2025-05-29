@@ -6,10 +6,12 @@
 </head>
 
 <body>
-    <a href="/orders" style="float:right;">
+    <a th:href="@{{contextPath}/orders
+            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
         <b>ЗАКАЗЫ &cudarrr;</b>
     </a>
-    <a href="/cart/items" style="float:right;">
+    <a th:href="@{{contextPath}/cart/items
+                (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
         <b>КОРЗИНА &cudarrr;</b>
     </a>
     <table style="width:70%;margin-left:auto;margin-right:auto;">
@@ -52,11 +54,14 @@
                 <table>
                     <tr>
                         <td>
-                            <a th:href="@{{contextPath}/items/{id}
-                            (contextPath=${@environment.getProperty('server.servlet.context-path')})
-                            (id=${item.id()})}">
+                            <a th:href="@{{contextPath}/main/items/{id}
+                            (contextPath=${@environment.getProperty('server.servlet.context-path')},
+                            id=${item.id()})}">
                                 <img width="300" height="300"
-                                     th:src="${'http://localhost:9090/intershop/image/'+item.id()}">
+                                     th:src="@{http://localhost:{port}{contextPath}/image/{imageName}
+                                     (port=${@environment.getProperty('server.port')},
+                                     contextPath=${@environment.getProperty('server.servlet.context-path')},
+                                     imageName=${item.imageName()})}">
                             </a>
                         </td>
                     </tr>
@@ -73,7 +78,9 @@
                     </tr>
                     <tr>
                         <td>
-                            <form th:action="${'/main/items/'+item.id()}" method="post">
+                            <form th:action="@{{contextPath}/main/items/{id}
+                            (contextPath=${@environment.getProperty('server.servlet.context-path')},
+                            id=${item.id()})}" method="post">
                                 <button name="action" value="minus">-</button>
                                 <span th:text="${item.count()}"></span>
                                 <button name="action" value="plus">+</button>

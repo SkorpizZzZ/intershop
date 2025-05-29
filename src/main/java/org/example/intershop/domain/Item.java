@@ -2,38 +2,46 @@ package org.example.intershop.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.Check;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
+@Data
 @Entity
 @Table(name = "items")
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode
+@Builder
 public class Item {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "item_seq")
-    @SequenceGenerator(name = "item_seq", sequenceName = "item_sequence", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Exclude
-    Long id;
+    private Long id;
 
     @Column(name = "title", nullable = false)
-    String title;
+    private String title;
 
     @Column(name = "price", nullable = false)
-    BigDecimal price;
+    private BigDecimal price;
 
     @Column(name = "description")
-    String description;
+    private String description;
 
     @Column(name = "count", nullable = false)
-    Long count;
+    @Check(constraints = "count > 0")
+    private Long count;
 
-    @OneToOne(mappedBy = "item", cascade = CascadeType.ALL)
-    Image image;
+    @Column(name = "image_name", nullable = false, unique = true)
+    private String imageName;
+
+    @ManyToOne
+    @JoinColumn(name = "cart_id")
+    private Cart cart;
+
+    @OneToMany(mappedBy = "item")
+    private List<OrderItem> orderItems = new ArrayList<>();
 }

@@ -4,28 +4,22 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
-    <changeSet id="createImageTable" author="ilgiznigmatullin (generated)">
+    <changeSet id="create-orders-table" author="ilgiznigmatullin (generated)">
         <preConditions>
             <and>
                 <not>
-                    <tableExists tableName="images" schemaName="${schemaName}" />
+                    <tableExists tableName="orders" schemaName="${schemaName}" />
                 </not>
                 <dbms type="postgresql"/>
             </and>
         </preConditions>
-        <createTable tableName="images" schemaName="${schemaName}">
-            <column name="id" type="bigint">
+        <createTable tableName="orders" schemaName="${schemaName}">
+            <column name="id" type="bigserial">
                 <constraints primaryKey="true"/>
-            </column>
-            <column name="path" type="varchar(255)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="item_id" type="bigint">
-                <constraints nullable="false" />
             </column>
         </createTable>
         <rollback>
-            <dropTable tableName="images" schemaName="${schemaName}"/>
+            <dropTable tableName="orders" schemaName="${schemaName}"/>
         </rollback>
     </changeSet>
 </databaseChangeLog>

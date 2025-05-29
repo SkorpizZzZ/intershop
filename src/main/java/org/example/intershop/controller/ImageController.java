@@ -1,7 +1,7 @@
 package org.example.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.intershop.service.ImageService;
+import org.example.intershop.service.FileService;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -18,13 +18,13 @@ import java.io.File;
 @RequiredArgsConstructor
 public class ImageController {
 
-    private final ImageService imageService;
+    private final FileService fileService;
 
-    @GetMapping(path = "/{id}", produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<Resource> image(@PathVariable("id") Long id) {
-        File file = imageService.findImageByItemId(id);
+    @GetMapping(path = "/{imageName}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<Resource> image(@PathVariable("imageName") String imageName) {
+        File file = fileService.getFile(imageName);
         return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_PNG)
+                .contentType(MediaType.IMAGE_JPEG)
                 .body(new FileSystemResource(file));
     }
 }

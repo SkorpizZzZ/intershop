@@ -8,6 +8,10 @@ public record ItemDto(
         BigDecimal price,
         String description,
         Long count,
-        ImageDto image
+        String imageName,
+        Long cartId
 ) {
+    public BigDecimal sumPrice() {
+        return price.multiply(BigDecimal.valueOf(count));
+    }
 }

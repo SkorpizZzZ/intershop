@@ -6,25 +6,29 @@
 </head>
 
 <body>
-<a href="/cart/items" style="float:right;">
+<a th:href="@{{contextPath}/cart/items
+            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
     <b>КОРЗИНА &cudarrr;</b>
 </a>
-<a href="/main/items" style="float:right;">
+<a th:href="@{{contextPath}/main
+            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
     <b>ГЛАВНАЯ &cudarrr;</b>
 </a>
 <table style="width:70%;margin-left:auto;margin-right:auto;">
     <tr th:each="order : ${orders}">
         <td>
             <h2>
-                <a th:text="${'Заказ №'+order.id()}" th:href="${'/orders/'+order.id()}"></a>
+                <a th:text="${'Заказ №'+order.id()}" th:href="@{{contextPath}/orders/{id}
+            (contextPath=${@environment.getProperty('server.servlet.context-path')},
+            id=${order.id()})}"></a>
             </h2>
             <table>
-                <tr th:each="item : ${order.items()}">
-                    <td th:text="${item.getTitle()+' ('+item.getCount()+' шт.) '+(item.getPrice()*item.getCount())+' руб.'}"></td>
+                <tr th:each="orderItem : ${order.orderItems()}">
+                    <td th:text="${orderItem.item().title()+' ('+orderItem.quantity()+' шт.) '+(orderItem.sumPrice())+' руб.'}"></td>
                 </tr>
             </table>
             <p>
-                <b th:text="${'Сумма: '+order.totalSum()}+' руб.'"></b>
+                <b th:text="${'Сумма: '+order.calculateTotalSum()}+' руб.'"></b>
             </p>
         </td>
     </tr>

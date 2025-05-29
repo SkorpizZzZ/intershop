@@ -18,6 +18,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        default_schema: intershop
     open-in-view: false
   liquibase:
     change-log: classpath:/db/changelog/rootChangeLog.xml
@@ -38,9 +39,5 @@ management:
         include: "*"
 logging:
   level:
+    org.example: DEBUG
     liquibase: INFO
-
-image-dir: images
-app-base-dir: user.dir
-clear-upload-dir: false
-default-image-path: static/default_image.png

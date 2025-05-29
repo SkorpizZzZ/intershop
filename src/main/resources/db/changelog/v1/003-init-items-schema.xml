@@ -4,17 +4,22 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
-    <changeSet id="createItemsTable" author="ilgiznigmatullin (generated)">
+    <changeSet id="create-items-table" author="ilgiznigmatullin (generated)">
         <preConditions>
             <and>
                 <not>
-                    <tableExists tableName="items" schemaName="${schemaName}" />
+                    <tableExists tableName="items" schemaName="${schemaName}"/>
                 </not>
+            </and>
+            <and>
+                <tableExists tableName="cart" schemaName="${schemaName}"/>
+            </and>
+            <and>
                 <dbms type="postgresql"/>
             </and>
         </preConditions>
         <createTable tableName="items" schemaName="${schemaName}">
-            <column name="id" type="bigint">
+            <column name="id" type="bigserial">
                 <constraints primaryKey="true"/>
             </column>
             <column name="title" type="varchar(255)">
@@ -25,7 +30,19 @@
             </column>
             <column name="description" type="varchar(255)"/>
             <column name="count" type="bigint" defaultValue="0">
-                <constraints nullable="false"/>
+                <constraints nullable="false" checkConstraint="count > 0"/>
+            </column>
+            <column name="image_name" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="cart_id" type="bigint">
+                <constraints
+                        nullable="true"
+                        unique="false"
+                        foreignKeyName="fk_items_carts"
+                        referencedColumnNames="id"
+                        referencedTableName="cart"
+                        referencedTableSchemaName="${schemaName}"/>
             </column>
         </createTable>
         <rollback>
