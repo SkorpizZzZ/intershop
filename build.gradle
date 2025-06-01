@@ -13,6 +13,10 @@ java {
     }
 }
 
+bootJar {
+    launchScript()
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor

@@ -1,19 +1,24 @@
 package org.example.intershop.service;
 
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ResourceUtils;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 
 @Service
 public class FileService {
 
-    public File getFile(String fileName) {
+    public Resource getFile(String fileName) {
         try {
-            return ResourceUtils.getFile(String.format("classpath:static/%s.jpeg", fileName));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("Не удалось найти ни запрашиваемый файл", e);
+            Resource image = new ClassPathResource(String.format("static/%s.jpeg", fileName));
+            if (image.exists()) {
+                return image;
+            } else {
+                throw new FileNotFoundException(String.format("Не удалось найти запрашиваемый файл %s", fileName));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("Ошибка при загрузке файла %s", e));
         }
     }
 }
