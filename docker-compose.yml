@@ -1,0 +1,28 @@
+version: '3'
+services:
+  intershop:
+    build: .
+    ports:
+      - "9090:9090"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://yandex-postgres-db-2:5432/yandex
+    depends_on:
+      - postgres
+    networks:
+      - yandex_default
+
+  postgres:
+    image: postgres:13
+    container_name: yandex-postgres-db-2
+    environment:
+      POSTGRES_USER: yandex
+      POSTGRES_PASSWORD: yandex
+      POSTGRES_DB: yandex
+    ports:
+      - "5439:5432"
+    networks:
+      - yandex_default
+
+networks:
+  yandex_default:
+    external: true
