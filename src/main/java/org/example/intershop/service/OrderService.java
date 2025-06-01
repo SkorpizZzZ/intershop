@@ -7,7 +7,6 @@ import org.example.intershop.domain.Item;
 import org.example.intershop.domain.Order;
 import org.example.intershop.domain.OrderItem;
 import org.example.intershop.dto.OrderDto;
-import org.example.intershop.mapper.ItemMapper;
 import org.example.intershop.mapper.OrderMapper;
 import org.example.intershop.repository.ItemRepository;
 import org.example.intershop.repository.OrderItemRepository;
@@ -24,9 +23,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ItemRepository itemRepository;
     private final OrderItemRepository orderItemRepository;
-    private final ItemService itemService;
     private final OrderMapper orderMapper;
-    private final ItemMapper itemMapper;
 
     private final TransactionService transactionService;
 

@@ -43,5 +43,6 @@ public class Item {
     private Cart cart;
 
     @OneToMany(mappedBy = "item")
+    @Builder.Default
     private List<OrderItem> orderItems = new ArrayList<>();
 }

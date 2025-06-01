@@ -16,11 +16,6 @@ public class TransactionService {
     }
 
     @Transactional
-    public void doInTransaction(Runnable action) {
-        action.run();
-    }
-
-    @Transactional
     public <T> void doInTransaction(Consumer<T> action, T argument) {
         action.accept(argument);
     }
