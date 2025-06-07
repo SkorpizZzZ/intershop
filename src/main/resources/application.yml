@@ -6,20 +6,17 @@ server:
 spring:
   application:
     name: intershop
-  datasource:
-    driver-class-name: org.postgresql.Driver
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5438/yandex
     password: yandex
     username: yandex
-    url: jdbc:postgresql://localhost:5438/yandex
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        format_sql: true
-        default_schema: intershop
-    open-in-view: false
+    pool:
+      enabled: true
+      initial-size: 10
+      max-size: 50
+      max-idle-time: 30s
+      max-life-time: 10m
+      validation-query: SELECT 1
   liquibase:
     change-log: classpath:/db/changelog/rootChangeLog.xml
     default-schema: intershop
