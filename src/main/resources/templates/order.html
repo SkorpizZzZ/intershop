@@ -32,7 +32,7 @@
                 <tr>
                     <td>
                         <a th:href="@{{contextPath}/main/items/{id}
-                            (contextPath=${@environment.getProperty('server.servlet.context-path')},
+                            (contextPath=${@environment.getProperty('spring.webflux.base-path')},
                             id=${orderItem.item().id()})}">
                             <img width="300" height="300"
                                  th:src="@{http://localhost:{port}{contextPath}/image/{imageName}
