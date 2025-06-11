@@ -8,15 +8,15 @@
 
 <body>
 <a th:href="@{{contextPath}/orders
-            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
+            (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
     <b>ЗАКАЗЫ &cudarrr;</b>
 </a>
 <a th:href="@{{contextPath}/cart/items
-            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
+            (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
     <b>КОРЗИНА &cudarrr;</b>
 </a>
 <a th:href="@{{contextPath}/main
-            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
+            (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
     <b>ГЛАВНАЯ &cudarrr;</b>
 </a>
 <h1 style="text-align:center" th:if="${newOrder}">Поздравляем! Успешная покупка! &#128578;</h1>
@@ -37,7 +37,7 @@
                             <img width="300" height="300"
                                  th:src="@{http://localhost:{port}{contextPath}/image/{imageName}
                                      (port=${@environment.getProperty('server.port')},
-                                     contextPath=${@environment.getProperty('server.servlet.context-path')},
+                                     contextPath=${@environment.getProperty('spring.webflux.base-path')},
                                      imageName=${orderItem.item().imageName()})}">
                         </a>
                     </td>

@@ -8,15 +8,15 @@
 
 <body>
     <a th:href="@{{contextPath}/orders
-            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
+            (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
         <b>ЗАКАЗЫ &cudarrr;</b>
     </a>
     <a th:href="@{{contextPath}/cart/items
-                (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
+                (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
         <b>КОРЗИНА &cudarrr;</b>
     </a>
     <a th:href="@{{contextPath}/main
-            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
+            (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
         <b>ГЛАВНАЯ &cudarrr;</b>
     </a>
     <div style="width:70%;margin-left:auto;margin-right:auto;">
@@ -24,7 +24,7 @@
             <img width="300" height="300"
                  th:src="@{http://localhost:{port}{contextPath}/image/{imageName}
                                      (port=${@environment.getProperty('server.port')},
-                                     contextPath=${@environment.getProperty('server.servlet.context-path')},
+                                     contextPath=${@environment.getProperty('spring.webflux.base-path')},
                                      imageName=${item.imageName()})}">
         </p>
         <p>
@@ -35,7 +35,7 @@
             <span th:text="${item.description()}"></span>
         </p>
         <form th:action="@{{contextPath}/main/items/{id}
-                            (contextPath=${@environment.getProperty('server.servlet.context-path')},
+                            (contextPath=${@environment.getProperty('spring.webflux.base-path')},
                             id=${item.id()})}" method="post">
             <button name="action" value="minus">-</button>
             <span th:text="${item.count()}"></span>

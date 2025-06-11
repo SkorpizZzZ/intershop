@@ -8,11 +8,11 @@
 
 <body>
 <a th:href="@{{contextPath}/cart/items
-            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
+            (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
     <b>КОРЗИНА &cudarrr;</b>
 </a>
 <a th:href="@{{contextPath}/main
-            (contextPath=${@environment.getProperty('server.servlet.context-path')})}" style="float:right;">
+            (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
     <b>ГЛАВНАЯ &cudarrr;</b>
 </a>
 <table style="width:70%;margin-left:auto;margin-right:auto;">
@@ -20,7 +20,7 @@
         <td>
             <h2>
                 <a th:text="${'Заказ №'+order.id()}" th:href="@{{contextPath}/orders/{id}
-            (contextPath=${@environment.getProperty('server.servlet.context-path')},
+            (contextPath=${@environment.getProperty('spring.webflux.base-path')},
             id=${order.id()})}"></a>
             </h2>
             <table>
