@@ -3,7 +3,6 @@ package org.example.intershop.controller;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.ListUtils;
 import org.example.intershop.service.ItemService;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
@@ -29,10 +28,9 @@ public class ItemController {
     ) {
         PageRequest pageRequest = createPageRequest(page, pageSize, sort);
         return itemService.findAll(pageRequest, title)
-                .collectList()
-                .flatMap(items -> {
-                    model.addAttribute("items", ListUtils.partition(items, 3));
-                    model.addAttribute("paging", new PageImpl<>(items, pageRequest, items.size()));
+                .flatMap(resultPage -> {
+                    model.addAttribute("items", ListUtils.partition(resultPage.getContent(), 3));
+                    model.addAttribute("paging", resultPage);
                     return Mono.just("main");
                 });
     }

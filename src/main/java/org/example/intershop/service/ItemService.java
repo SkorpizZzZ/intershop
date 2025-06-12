@@ -6,6 +6,8 @@ import org.example.intershop.dto.ItemDto;
 import org.example.intershop.exception.BusinessException;
 import org.example.intershop.mapper.ItemMapper;
 import org.example.intershop.repository.ItemRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,13 +22,19 @@ public class ItemService {
     private final ItemMapper itemMapper;
 
     @Transactional(readOnly = true)
-    public Flux<ItemDto> findAll(PageRequest page, String title) {
+    public Mono<Page<ItemDto>> findAll(PageRequest page, String title) {
         if (StringUtils.isBlank(title)) {
             return itemRepository.findAllBy(page)
-                    .map(itemMapper::itemEntityToItemDto);
+                    .map(itemMapper::itemEntityToItemDto)
+                    .collectList()
+                    .zipWith(itemRepository.count())
+                    .map(tuple -> new PageImpl<>(tuple.getT1(), page, tuple.getT2()));
         }
         return itemRepository.findAllByTitleIgnoreCase(title, page)
-                .map(itemMapper::itemEntityToItemDto);
+                .map(itemMapper::itemEntityToItemDto)
+                .collectList()
+                .zipWith(itemRepository.countAllByTitleIgnoreCase(title))
+                .map(tuple -> new PageImpl<>(tuple.getT1(), page, tuple.getT2()));
     }
 
     @Transactional(readOnly = true)
