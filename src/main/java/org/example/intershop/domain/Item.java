@@ -1,48 +1,35 @@
 package org.example.intershop.domain;
 
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Check;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
-@Entity
-@Table(name = "items")
+@Table(name = "items", schema = "#{@dataBaseConfiguration.DEFAULT_SCHEMA}")
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
-@EqualsAndHashCode
 @Builder
 public class Item {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Exclude
+    @Column("id")
     private Long id;
 
-    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "price", nullable = false)
     private BigDecimal price;
 
-    @Column(name = "description")
     private String description;
 
-    @Column(name = "count", nullable = false)
-    @Check(constraints = "count > 0")
     private Long count;
 
-    @Column(name = "image_name", nullable = false, unique = true)
+    @Column("image_name")
     private String imageName;
 
-    @ManyToOne
-    @JoinColumn(name = "cart_id")
-    private Cart cart;
+    @Column("cart_id")
+    private Long cartId;
 
-    @OneToMany(mappedBy = "item")
-    @Builder.Default
-    private List<OrderItem> orderItems = new ArrayList<>();
 }
