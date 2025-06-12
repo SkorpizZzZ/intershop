@@ -2,14 +2,15 @@ package org.example.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.ListUtils;
-import org.example.intershop.dto.ItemDto;
 import org.example.intershop.service.ItemService;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 @Controller
 @RequestMapping("/main")
@@ -19,37 +20,42 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public String mainPage(
+    public Mono<String> mainPage(
             @RequestParam(name = "sort", defaultValue = "NO") String sort,
             @RequestParam(name = "pageNumber", defaultValue = "0") int page,
             @RequestParam(name = "pageSize", defaultValue = "5") int pageSize,
             @RequestParam(name = "search", required = false) String title,
             Model model
     ) {
-        Page<ItemDto> itemPage = itemService.findAll(createPageRequest(page, pageSize, sort), title);
-        model.addAttribute("items", ListUtils.partition(itemPage.getContent(), 3));
-        model.addAttribute("paging", itemPage);
-        return "main";
+        PageRequest pageRequest = createPageRequest(page, pageSize, sort);
+        return itemService.findAll(pageRequest, title)
+                .collectList()
+                .flatMap(items -> {
+                    model.addAttribute("items", ListUtils.partition(items, 3));
+                    model.addAttribute("paging", new PageImpl<>(items, pageRequest, items.size()));
+                    return Mono.just("main");
+                });
     }
 
-        @GetMapping("/items/{id}")
-        public String getItem(@PathVariable("id") Long id, Model model) {
-            ItemDto foundItem = itemService.findById(id);
-            model.addAttribute("item", foundItem);
-            return "item";
-        }
+    @GetMapping("/items/{id}")
+    public Mono<String> getItem(@PathVariable("id") Long id, Model model) {
+        return itemService.findById(id)
+                .doOnNext(itemDto -> model.addAttribute("item", itemDto))
+                .thenReturn("item");
+    }
 
 
-        @PostMapping("/items/{id}")
-        public String actionItem(
-                @PathVariable("id") Long id,
-                @RequestParam(name = "action") String action,
-                Model model
-        ) {
-            ItemDto actionItem = itemService.action(id, action);
-            model.addAttribute("item", actionItem);
-            return "redirect:/main";
-        }
+    @PostMapping("/items/{id}")
+    public Mono<String> actionItem(
+            @PathVariable("id") Long id,
+            ServerWebExchange serverWebExchange,
+            Model model
+    ) {
+        return  serverWebExchange.getFormData()
+                .flatMap(data -> itemService.action(id, data.toSingleValueMap().get("action")))
+                .doOnNext(itemDto -> model.addAttribute("item", itemDto))
+                .thenReturn("redirect:/main");
+    }
 
     private PageRequest createPageRequest(int page, int pageSize, String sort) {
         Sort sorting = switch (sort) {
