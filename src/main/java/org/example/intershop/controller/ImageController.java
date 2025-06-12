@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import reactor.core.publisher.Mono;
 
 @Controller
 @RequestMapping("/image")
@@ -18,10 +19,11 @@ public class ImageController {
     private final FileService fileService;
 
     @GetMapping(path = "/{imageName}", produces = MediaType.IMAGE_JPEG_VALUE)
-    public ResponseEntity<Resource> image(@PathVariable("imageName") String imageName) {
-        Resource file = fileService.getFile(imageName);
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG)
-                .body(file);
+    public Mono<ResponseEntity<Resource>> image(@PathVariable("imageName") String imageName) {
+        return fileService.getFile(imageName)
+                .map(image -> ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(image)
+                );
     }
 }
