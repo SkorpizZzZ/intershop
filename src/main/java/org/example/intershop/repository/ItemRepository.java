@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 
 public interface ItemRepository extends R2dbcRepository<Item, Long> {
 
-    Flux<Item> findAllByTitle(String title, Pageable pageable);
+    Flux<Item> findAllByTitleIgnoreCase(String title, Pageable pageable);
 
     Flux<Item> findAllByCartId(Long cartId);
 

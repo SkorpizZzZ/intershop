@@ -25,7 +25,7 @@ public class ItemService {
             return itemRepository.findAllBy(page)
                     .map(itemMapper::itemEntityToItemDto);
         }
-        return itemRepository.findAllByTitle(title, page)
+        return itemRepository.findAllByTitleIgnoreCase(title, page)
                 .map(itemMapper::itemEntityToItemDto);
     }
 
