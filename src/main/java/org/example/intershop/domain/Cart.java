@@ -1,24 +1,16 @@
 package org.example.intershop.domain;
 
-import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.List;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Data
-@Entity
-@Table(name = "cart")
+@Table("cart")
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = "items")
 @EqualsAndHashCode
 @Builder
 public class Cart {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @EqualsAndHashCode.Exclude
     private Long id;
-
-    @OneToMany(mappedBy = "cart")
-    private List<Item> items;
 }

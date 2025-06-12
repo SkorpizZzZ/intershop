@@ -52,7 +52,7 @@ public class ItemController {
             Model model
     ) {
         return  serverWebExchange.getFormData()
-                .flatMap(data -> itemService.action(id, data.toSingleValueMap().get("action")))
+                .flatMap(data -> itemService.action(id, data.getFirst("action")))
                 .doOnNext(itemDto -> model.addAttribute("item", itemDto))
                 .thenReturn("redirect:/main");
     }

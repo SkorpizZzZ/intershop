@@ -1,11 +1,12 @@
 package org.example.intershop.domain;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Data
-@Entity
-@Table(name = "order_item")
+@Table(name = "order_item", schema = "#{@dataBaseConfiguration.DEFAULT_SCHEMA}")
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -14,18 +15,14 @@ import lombok.*;
 public class OrderItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Exclude
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    private Order order;
+    @Column("order_id")
+    private Long orderId;
 
-    @ManyToOne
-    @JoinColumn(name = "item_id")
-    private Item item;
+    @Column("item_id")
+    private Long itemId;
 
-    @Column(name = "quantity", nullable = false)
     private Long quantity;
 }

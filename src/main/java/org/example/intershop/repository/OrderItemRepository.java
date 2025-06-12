@@ -1,10 +1,9 @@
 package org.example.intershop.repository;
 
 import org.example.intershop.domain.OrderItem;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import reactor.core.publisher.Flux;
 
-import java.util.List;
-
-public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
-    List<OrderItem> findByOrderId(Long orderId);
+public interface OrderItemRepository extends R2dbcRepository<OrderItem, Long> {
+    Flux<OrderItem> findByOrderId(Long orderId);
 }
