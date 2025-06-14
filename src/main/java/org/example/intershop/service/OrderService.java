@@ -7,6 +7,7 @@ import org.example.intershop.domain.Order;
 import org.example.intershop.domain.OrderItem;
 import org.example.intershop.dto.OrderDto;
 import org.example.intershop.dto.OrderItemDto;
+import org.example.intershop.exception.BusinessException;
 import org.example.intershop.mapper.OrderItemMapper;
 import org.example.intershop.repository.ItemRepository;
 import org.example.intershop.repository.OrderItemRepository;
@@ -79,6 +80,7 @@ public class OrderService {
     @Transactional(readOnly = true)
     public Mono<OrderDto> findById(Long id) {
         return orderRepository.findById(id)
+                .switchIfEmpty(Mono.error(new BusinessException(String.format("Order with id = %s not found", id))))
                 .flatMap(order ->
                         orderItemRepository.findByOrderId(id)
                                 .flatMap(foundOrderItem ->
