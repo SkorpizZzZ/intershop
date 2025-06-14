@@ -1,12 +1,10 @@
 server:
   port: 0
 spring:
+  data:
+    r2dbc:
+      schema: public
   liquibase:
     default-schema: public
     parameters:
       schemaName: public
-  jpa:
-    properties:
-      hibernate:
-        default_schema: public
-        show_sql: false
