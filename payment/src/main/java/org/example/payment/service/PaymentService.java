@@ -14,7 +14,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
 
     public Mono<BigDecimal> getBalance() {
-        return paymentRepository.getBalance();
+        return paymentRepository.getCurrentBalance();
     }
 
 }

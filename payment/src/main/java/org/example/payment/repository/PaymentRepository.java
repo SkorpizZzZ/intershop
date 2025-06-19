@@ -10,5 +10,5 @@ import java.math.BigDecimal;
 public interface PaymentRepository extends R2dbcRepository<AccountEntity, Long> {
 
     @Query("SELECT ac.balance FROM accounts AS ac WHERE ac.id = 1")
-    Mono<BigDecimal> getBalance();
+    Mono<BigDecimal> getCurrentBalance();
 }
