@@ -1,0 +1,33 @@
+plugins {
+    id "org.openapi.generator" version "7.13.0"
+}
+
+sourceSets.main.java.srcDir "$projectDir/build/generated/src/main/java"
+
+openApiGenerate {
+    generatorName.set("spring")
+    inputSpec.set("$projectDir/src/main/resources/openApi/payment-v1.0.yml")
+    outputDir.set("$projectDir/build/generated")
+    modelPackage.set("org.example.domain")
+    apiPackage.set("org.example.controller")
+    configOptions.set([
+            hideGenerationTimestamp: "true",
+            requestMappingMode: "controller",
+            interfaceOnly: "true",
+            library: "spring-boot",
+            reactive: "true",
+            useSpringBoot3: "true",
+            useJakartaEe: "true",
+            useTags: "true",
+            dateLibrary: "java8",
+            openApiNullable: "false",
+            serializableModel: "true",
+            returnSuccessCode: "true",
+            skipDefaultInterface: "true",
+            generateSupportingFiles: "false"
+    ])
+}
+
+tasks.named('compileJava') {
+    dependsOn(tasks.openApiGenerate)
+}
