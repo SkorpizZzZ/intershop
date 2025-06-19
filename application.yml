@@ -1,0 +1,52 @@
+server:
+  netty:
+    idle-timeout: 60s                     # Закрытие неактивных соединений через 60 секунд
+    connection-timeout: 30s               # Тайм-аут установки соединения
+
+spring:
+  application:
+    name: intershop
+  webflux:
+    base-path: /intershop
+  data:
+    r2dbc:
+      schema: intershop
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5438/yandex
+    password: yandex
+    username: yandex
+    pool:
+      enabled: true
+      initial-size: 10
+      max-size: 50
+      max-idle-time: 30s
+      max-life-time: 10m
+      validation-query: SELECT 1
+  thymeleaf:
+    encoding: UTF-8
+  liquibase:
+    change-log: classpath:/db/changelog/rootChangeLog.xml
+    default-schema: intershop
+    parameters:
+      schemaName: intershop
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5438/yandex
+    user: yandex
+    password: yandex
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+    liquibase:
+      access: read_only
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.example: DEBUG
+    liquibase: INFO

@@ -5,6 +5,7 @@ spring:
     r2dbc:
       schema: public
   liquibase:
+    change-log: classpath:/db/changelog/rootChangeLog.xml
     default-schema: public
     parameters:
       schemaName: public
