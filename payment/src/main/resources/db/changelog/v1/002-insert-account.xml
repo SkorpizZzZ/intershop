@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="create-accounts-table" author="ilgiznigmatullin (generated)">
+        <preConditions>
+            <and>
+                    <tableExists tableName="accounts" schemaName="${schemaName}"/>
+            </and>
+            <and>
+                <dbms type="postgresql"/>
+            </and>
+        </preConditions>
+
+        <insert tableName="accounts" schemaName="${schemaName}">
+            <column name="id" value="1"/>
+            <column name="balance" value="100000"/>
+        </insert>
+
+        <rollback>
+            <dropTable tableName="cart" schemaName="${schemaName}"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
