@@ -12,6 +12,8 @@ spring:
     r2dbc:
       schema: intershop
   r2dbc:
+    properties:
+      schema: intershop
     url: r2dbc:postgresql://localhost:5438/yandex
     password: yandex
     username: yandex

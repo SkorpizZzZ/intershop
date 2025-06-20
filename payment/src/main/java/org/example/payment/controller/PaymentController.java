@@ -20,7 +20,10 @@ public class PaymentController implements DefaultApi {
 
     @Override
     public Mono<ResponseEntity<BigDecimal>> balanceGet(ServerWebExchange exchange) {
-        return null;
+        return paymentService.getBalance()
+                .map(balance -> ResponseEntity.ok()
+                        .body(balance)
+                );
     }
 
     @Override
