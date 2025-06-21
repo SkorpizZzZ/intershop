@@ -1,2 +1,2 @@
 server:
-  port: 7070
+  port: "${submodule.server.payment.port}"

@@ -52,3 +52,12 @@ logging:
     org.springframework.web: DEBUG
     org.example: DEBUG
     liquibase: INFO
+
+submodule:
+  server:
+    payment:
+      port: 7070
+      host: localhost
+    store:
+      port: 9090
+      host: localhost

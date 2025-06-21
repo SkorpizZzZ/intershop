@@ -15,6 +15,7 @@
             (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
     <b>ГЛАВНАЯ &cudarrr;</b>
 </a>
+<h1 style="text-align:center" th:if="${!isPaymentUp}">Сервис платежей не отвечает &#128308;</h1>
 <table style="width:70%;margin-left:auto;margin-right:auto;">
     <tr th:each="item : ${items}">
         <td>
@@ -61,7 +62,7 @@
         <td style="text-align:right">
             <form th:action="@{{contextPath}/orders/buy
                             (contextPath=${@environment.getProperty('spring.webflux.base-path')})}"
-                  method="post" th:if="${total.compareTo(0) != 0}">
+                  method="post" th:if="${total.compareTo(0) != 0 && isPaymentUp}">
                 <button>Купить</button>
             </form>
         </td>

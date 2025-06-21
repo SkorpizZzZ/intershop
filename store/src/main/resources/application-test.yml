@@ -1,6 +1,8 @@
 server:
   port: 0
 spring:
+  webflux:
+    base-path: /intershop
   data:
     r2dbc:
       schema: public
@@ -9,3 +11,11 @@ spring:
     default-schema: public
     parameters:
       schemaName: public
+submodule:
+  server:
+    payment:
+      port: 7070
+      host: localhost
+    store:
+      port: 9090
+      host: localhost

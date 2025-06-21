@@ -1,6 +1,7 @@
 package org.example.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.intershop.client.HttpPaymentClient;
 import org.example.intershop.dto.ItemDto;
 import org.example.intershop.service.ItemService;
 import org.springframework.stereotype.Controller;
@@ -13,6 +14,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/cart")
@@ -20,18 +22,22 @@ import java.math.BigDecimal;
 public class CartController {
 
     private final ItemService itemService;
+    private final HttpPaymentClient paymentClient;
 
     @GetMapping("/items")
     public Mono<String> getCart(Model model) {
-        return itemService.findAllByCartId(1L)
-                .collectList()
-                .flatMap(items -> {
+        return paymentClient.isPaymentServiceUp()
+                .zipWith(itemService.findAllByCartId(1L).collectList())
+                .map(tuple -> {
+                    Boolean isPaymentUp = tuple.getT1();
+                    List<ItemDto> items = tuple.getT2();
+                    model.addAttribute("isPaymentUp", isPaymentUp);
                     model.addAttribute("items", items);
                     BigDecimal total = items.stream()
                             .map(ItemDto::sumPrice)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
                     model.addAttribute("total", total);
-                    return Mono.just("cart");
+                    return "cart";
                 });
     }
 
@@ -41,7 +47,7 @@ public class CartController {
             ServerWebExchange serverWebExchange,
             Model model
     ) {
-        return  serverWebExchange.getFormData()
+        return serverWebExchange.getFormData()
                 .flatMap(data -> itemService.action(id, data.toSingleValueMap().get("action")))
                 .doOnNext(itemDto -> model.addAttribute("item", itemDto))
                 .thenReturn("redirect:/cart/items");
