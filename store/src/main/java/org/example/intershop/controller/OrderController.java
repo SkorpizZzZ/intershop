@@ -1,6 +1,7 @@
 package org.example.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.intershop.exception.BusinessException;
 import org.example.intershop.service.OrderService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,6 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Controller
 @RequestMapping("/orders")
@@ -46,6 +50,10 @@ public class OrderController {
     @PostMapping("/buy")
     public Mono<String> buy() {
         return orderService.buy()
-                .map(order -> "redirect:/orders/".concat(order.id().toString().concat("?newOrder=true")));
+                .map(order -> "redirect:/orders/".concat(order.id().toString().concat("?newOrder=true")))
+                .onErrorResume(BusinessException.class, e -> {
+                    String error = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
+                    return Mono.just("redirect:/cart/items".concat("?error=").concat(error));
+                });
     }
 }

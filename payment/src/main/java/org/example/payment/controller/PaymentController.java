@@ -27,7 +27,8 @@ public class PaymentController implements DefaultApi {
     }
 
     @Override
-    public Mono<ResponseEntity<BigDecimal>> balancePost(Mono<BigDecimal> body, ServerWebExchange exchange) {
-        return null;
+    public Mono<ResponseEntity<BigDecimal>> balancePost(Mono<BigDecimal> amount, ServerWebExchange exchange) {
+        return paymentService.pay(amount)
+                .map(response -> ResponseEntity.ok().body(response));
     }
 }

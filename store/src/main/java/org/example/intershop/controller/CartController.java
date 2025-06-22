@@ -1,6 +1,7 @@
 package org.example.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.example.intershop.client.HttpPaymentClient;
 import org.example.intershop.dto.ItemDto;
 import org.example.intershop.service.ItemService;
@@ -14,6 +15,8 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Controller
@@ -25,7 +28,12 @@ public class CartController {
     private final HttpPaymentClient paymentClient;
 
     @GetMapping("/items")
-    public Mono<String> getCart(Model model) {
+    public Mono<String> getCart(Model model, ServerWebExchange serverWebExchange) {
+        String error = serverWebExchange.getRequest().getQueryParams().getFirst("error");
+        if (StringUtils.isNotBlank(error)) {
+            String decodedError = URLDecoder.decode(error, StandardCharsets.UTF_8);
+            model.addAttribute("error", decodedError);
+        }
         return paymentClient.isPaymentServiceUp()
                 .zipWith(itemService.findAllByCartId(1L).collectList())
                 .map(tuple -> {

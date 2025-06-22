@@ -16,6 +16,7 @@
     <b>ГЛАВНАЯ &cudarrr;</b>
 </a>
 <h1 style="text-align:center" th:if="${!isPaymentUp}">Сервис платежей не отвечает &#128308;</h1>
+<h1 style="text-align:center" th:if = "${error != null}" th:text = "${error}"/>
 <table style="width:70%;margin-left:auto;margin-right:auto;">
     <tr th:each="item : ${items}">
         <td>

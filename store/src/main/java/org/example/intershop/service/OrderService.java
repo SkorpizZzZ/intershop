@@ -2,12 +2,12 @@ package org.example.intershop.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.intershop.client.HttpPaymentClient;
 import org.example.intershop.domain.Item;
 import org.example.intershop.domain.Order;
-import org.example.intershop.domain.OrderItem;
 import org.example.intershop.dto.OrderDto;
-import org.example.intershop.dto.OrderItemDto;
 import org.example.intershop.exception.BusinessException;
+import org.example.intershop.exception.PaymentException;
 import org.example.intershop.mapper.OrderItemMapper;
 import org.example.intershop.repository.ItemRepository;
 import org.example.intershop.repository.OrderItemRepository;
@@ -16,9 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -29,6 +28,9 @@ public class OrderService {
     private final ItemRepository itemRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderItemMapper orderItemMapper;
+
+    private final OrderItemService orderItemService;
+    private final HttpPaymentClient paymentClient;
 
     @Transactional(readOnly = true)
     public Flux<OrderDto> findAll() {
@@ -42,39 +44,35 @@ public class OrderService {
                 );
     }
 
+    @Transactional
     public Mono<OrderDto> buy() {
         return itemRepository.findAllByCartId(1L)
                 .collectList()
-                .flatMap(this::saveOrder);
+                .flatMap(this::processOrder);
+    }
 
+    private Mono<OrderDto> processOrder(List<Item> itemsInCart) {
+        return Mono.defer(() -> {
+            BigDecimal totalSum = calculateTotalSum(itemsInCart);
+            return paymentClient.pay(totalSum)
+                    .flatMap(paymentResult -> saveOrder(itemsInCart))
+                    .onErrorResume(PaymentException.class, e ->
+                            Mono.error(new BusinessException(e.getMessage())));
+        });
+    }
+
+    private BigDecimal calculateTotalSum(List<Item> items) {
+        return items.stream()
+                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getCount())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private Mono<OrderDto> saveOrder(List<Item> itemsInCart) {
         return orderRepository.save(new Order())
-                .flatMap(savedOrder -> {
-                    List<OrderItemDto> savedOrderItems = new ArrayList<>();
-                    return Flux.fromIterable(itemsInCart)
-                            .flatMap(item -> {
-                                item.setCartId(null);
-                                OrderItem orderItem = OrderItem.builder()
-                                        .orderId(savedOrder.getId())
-                                        .itemId(item.getId())
-                                        .quantity(item.getCount())
-                                        .build();
-                                item.setCount(0L);
-                                return Mono.zip(
-                                                itemRepository.save(item),
-                                                orderItemRepository.save(orderItem)
-                                        ).map(Tuple2::getT2)
-                                        .doOnNext(savedOrderItem ->
-                                                savedOrderItems.add(orderItemMapper.orderItemToOrderItemDto(
-                                                        savedOrderItem,
-                                                        item
-                                                ))
-                                        );
-                            })
-                            .then(Mono.just(new OrderDto(savedOrder.getId(), savedOrderItems)));
-                });
+                .flatMap(savedOrder -> orderItemService.saveOrderItems(itemsInCart, savedOrder)
+                        .collectList()
+                        .map(savedOrderItems -> new OrderDto(savedOrder.getId(), savedOrderItems))
+                );
     }
 
     @Transactional(readOnly = true)
