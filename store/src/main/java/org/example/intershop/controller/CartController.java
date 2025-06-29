@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.example.intershop.client.HttpPaymentClient;
 import org.example.intershop.dto.ItemDto;
+import org.example.intershop.redis.ItemRedisService;
 import org.example.intershop.service.ItemService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,6 +26,7 @@ import java.util.List;
 public class CartController {
 
     private final ItemService itemService;
+    private final ItemRedisService itemRedisService;
     private final HttpPaymentClient paymentClient;
 
     @GetMapping("/items")
@@ -35,7 +37,7 @@ public class CartController {
             model.addAttribute("error", decodedError);
         }
         return paymentClient.isPaymentServiceUp()
-                .zipWith(itemService.findAllByCartId(1L).collectList())
+                .zipWith(itemRedisService.findAllByCartId(1L, itemService::findAllByCartId).collectList())
                 .map(tuple -> {
                     Boolean isPaymentUp = tuple.getT1();
                     List<ItemDto> items = tuple.getT2();
@@ -56,7 +58,9 @@ public class CartController {
             Model model
     ) {
         return serverWebExchange.getFormData()
-                .flatMap(data -> itemService.action(id, data.toSingleValueMap().get("action")))
+                .flatMap(data ->
+//                        itemRedisService.action(id, data.toSingleValueMap().get("action"), itemService::action)
+                        itemService.action(id, data.toSingleValueMap().get("action")))
                 .doOnNext(itemDto -> model.addAttribute("item", itemDto))
                 .thenReturn("redirect:/cart/items");
     }

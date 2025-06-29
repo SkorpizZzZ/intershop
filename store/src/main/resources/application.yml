@@ -1,2 +1,6 @@
 server:
   port: "${submodule.server.store.port}"
+spring:
+  cache:
+    redis:
+      time-to-live: PT1m

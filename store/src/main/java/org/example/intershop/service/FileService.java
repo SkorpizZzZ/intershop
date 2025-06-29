@@ -1,20 +1,25 @@
 package org.example.intershop.service;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 import reactor.core.publisher.Mono;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 @Service
 public class FileService {
 
-    public Mono<Resource> getFile(String fileName) {
+    public Mono<byte[]> getFile(String fileName) {
        return Mono.fromSupplier(() -> new ClassPathResource(String.format("static/%s.jpeg", fileName)))
                 .flatMap(resource -> {
                     if (resource.exists()) {
-                        return Mono.just((Resource) resource);
+                        try {
+                            return Mono.just(FileCopyUtils.copyToByteArray(resource.getInputStream()));
+                        } catch (IOException e) {
+                            return Mono.error(e);
+                        }
                     } else {
                         return Mono.error(new FileNotFoundException(
                                 String.format("Не удалось найти запрашиваемый файл %s", fileName)

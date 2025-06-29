@@ -1,8 +1,8 @@
 package org.example.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.intershop.redis.FileRedisService;
 import org.example.intershop.service.FileService;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,10 +17,11 @@ import reactor.core.publisher.Mono;
 public class ImageController {
 
     private final FileService fileService;
+    private final FileRedisService fileRedisService;
 
     @GetMapping(path = "/{imageName}", produces = MediaType.IMAGE_JPEG_VALUE)
-    public Mono<ResponseEntity<Resource>> image(@PathVariable("imageName") String imageName) {
-        return fileService.getFile(imageName)
+    public Mono<ResponseEntity<byte[]>> image(@PathVariable("imageName") String imageName) {
+        return fileRedisService.getFile(imageName, fileService::getFile)
                 .map(image -> ResponseEntity.ok()
                         .contentType(MediaType.IMAGE_JPEG)
                         .body(image)

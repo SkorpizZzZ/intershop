@@ -7,8 +7,8 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 
-@Data
 @Table(name = "items", schema = "#{@dataBaseConfiguration.DEFAULT_SCHEMA}")
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -33,3 +33,4 @@ public class Item {
     private Long cartId;
 
 }
+

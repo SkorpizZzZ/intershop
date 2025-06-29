@@ -3,8 +3,10 @@ package org.example.intershop.service;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.example.intershop.dto.ItemDto;
+import org.example.intershop.dto.RestPage;
 import org.example.intershop.exception.BusinessException;
 import org.example.intershop.mapper.ItemMapper;
+import org.example.intershop.redis.ItemRedisService;
 import org.example.intershop.repository.ItemRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -20,6 +22,7 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final ItemMapper itemMapper;
+    private final ItemRedisService itemRedisService;
 
     @Transactional(readOnly = true)
     public Mono<Page<ItemDto>> findAll(PageRequest page, String title) {
@@ -28,7 +31,12 @@ public class ItemService {
                     .map(itemMapper::itemEntityToItemDto)
                     .collectList()
                     .zipWith(itemRepository.count())
-                    .map(tuple -> new PageImpl<>(tuple.getT1(), page, tuple.getT2()));
+                    .map(tuple -> new RestPage<>(
+                            tuple.getT1(),
+                            page.getPageNumber(),
+                            page.getPageSize(),
+                            tuple.getT2())
+                    );
         }
         return itemRepository.findAllByTitleIgnoreCase(title, page)
                 .map(itemMapper::itemEntityToItemDto)
