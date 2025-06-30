@@ -12,6 +12,7 @@ import org.example.intershop.mapper.OrderItemMapper;
 import org.example.intershop.repository.ItemRepository;
 import org.example.intershop.repository.OrderItemRepository;
 import org.example.intershop.repository.OrderRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -45,6 +46,7 @@ public class OrderService {
     }
 
     @Transactional
+    @CacheEvict(value = "items", allEntries = true)
     public Mono<OrderDto> buy() {
         return itemRepository.findAllByCartId(1L)
                 .collectList()

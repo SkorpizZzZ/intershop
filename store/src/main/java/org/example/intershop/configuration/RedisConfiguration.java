@@ -44,20 +44,6 @@ public class RedisConfiguration {
     }
 
     @Bean
-    public RedisCacheManagerBuilderCustomizer itemsInCartCacheCustomizer() {
-        return builder -> builder.withCacheConfiguration(
-                "itemsInCart",
-                RedisCacheConfiguration.defaultCacheConfig()
-                        .entryTtl(Duration.of(1, ChronoUnit.MINUTES))
-                        .serializeValuesWith(
-                                RedisSerializationContext.SerializationPair.fromSerializer(
-                                        new GenericJackson2JsonRedisSerializer()
-                                )
-                        ));
-    }
-
-
-    @Bean
     public RedisCacheManagerBuilderCustomizer fileCacheCustomizer() {
         return builder -> builder.withCacheConfiguration(
                 "file",

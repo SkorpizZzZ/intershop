@@ -1,5 +1,6 @@
 package org.example.intershop.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
@@ -11,6 +12,7 @@ import java.io.IOException;
 @Service
 public class FileService {
 
+    @Cacheable(value = "file", key = "#fileName")
     public Mono<byte[]> getFile(String fileName) {
        return Mono.fromSupplier(() -> new ClassPathResource(String.format("static/%s.jpeg", fileName)))
                 .flatMap(resource -> {

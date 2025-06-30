@@ -2,7 +2,6 @@ package org.example.intershop.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.ListUtils;
-import org.example.intershop.redis.ItemRedisService;
 import org.example.intershop.service.ItemService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -18,7 +17,6 @@ import reactor.core.publisher.Mono;
 public class ItemController {
 
     private final ItemService itemService;
-    private final ItemRedisService itemRedisService;
 
     @GetMapping
     public Mono<String> mainPage(
@@ -29,7 +27,7 @@ public class ItemController {
             Model model
     ) {
         PageRequest pageRequest = createPageRequest(page, pageSize, sort);
-        return itemRedisService.findAll(pageRequest, title, itemService::findAll)
+        return itemService.findAll(pageRequest, title)
                 .flatMap(resultPage -> {
                     model.addAttribute("items", ListUtils.partition(resultPage.getContent(), 3));
                     model.addAttribute("paging", resultPage);
@@ -39,7 +37,7 @@ public class ItemController {
 
     @GetMapping("/items/{id}")
     public Mono<String> getItem(@PathVariable("id") Long id, Model model) {
-        return itemRedisService.findById(id, itemService::findById)
+        return itemService.findById(id)
                 .doOnNext(itemDto -> model.addAttribute("item", itemDto))
                 .thenReturn("item");
     }
@@ -51,7 +49,7 @@ public class ItemController {
             ServerWebExchange serverWebExchange,
             Model model
     ) {
-        return  serverWebExchange.getFormData()
+        return serverWebExchange.getFormData()
                 .flatMap(data -> itemService.action(id, data.getFirst("action")))
                 .doOnNext(itemDto -> model.addAttribute("item", itemDto))
                 .thenReturn("redirect:/main");

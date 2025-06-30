@@ -6,8 +6,9 @@ import org.example.intershop.dto.ItemDto;
 import org.example.intershop.dto.RestPage;
 import org.example.intershop.exception.BusinessException;
 import org.example.intershop.mapper.ItemMapper;
-import org.example.intershop.redis.ItemRedisService;
 import org.example.intershop.repository.ItemRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -22,9 +23,9 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final ItemMapper itemMapper;
-    private final ItemRedisService itemRedisService;
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "items", key = "#page + '::' + #title")
     public Mono<Page<ItemDto>> findAll(PageRequest page, String title) {
         if (StringUtils.isBlank(title)) {
             return itemRepository.findAllBy(page)
@@ -46,6 +47,7 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "item", key = "#id")
     public Mono<ItemDto> findById(Long id) {
         return itemRepository.findById(id)
                 .map(itemMapper::itemEntityToItemDto)
@@ -53,6 +55,7 @@ public class ItemService {
     }
 
     @Transactional
+    @CacheEvict(value = "items", allEntries = true)
     public Mono<ItemDto> action(Long id, String action) {
         return itemRepository.findById(id)
                 .switchIfEmpty(Mono.error(new BusinessException(String.format("Item with id = %s not found", id))))
@@ -65,6 +68,7 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "items", key = "#cartId")
     public Flux<ItemDto> findAllByCartId(Long cartId) {
         return itemRepository.findAllByCartId(cartId)
                 .map(itemMapper::itemEntityToItemDto);
