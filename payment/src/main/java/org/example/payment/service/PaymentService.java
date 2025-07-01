@@ -1,6 +1,7 @@
 package org.example.payment.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.payment.exception.NotEnoughMoneyException;
 import org.example.payment.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,7 @@ public class PaymentService {
                     BigDecimal payAmount = tuple.getT2();
                     if (payAmount.compareTo(currentBalance) > 0) {
                         return Mono.error(
-                                new IllegalArgumentException(
+                                new NotEnoughMoneyException(
                                         String.format("Недостаточно средств на балансе. Сумма баланса %s", currentBalance)
                                 )
                         );
