@@ -1,5 +1,6 @@
 package org.example.intershop.service.integration.service;
 
+import org.example.intershop.client.HttpPaymentClient;
 import org.example.intershop.domain.Item;
 import org.example.intershop.domain.Order;
 import org.example.intershop.domain.OrderItem;
@@ -15,12 +16,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 
 public class OrderServiceIT extends AbstractIntegration {
     @Autowired
@@ -33,6 +39,8 @@ public class OrderServiceIT extends AbstractIntegration {
     private OrderItemRepository orderItemRepository;
     @Autowired
     private CartRepository cartRepository;
+    @MockitoBean
+    private HttpPaymentClient paymentClient;
 
     private Order order = new Order();
     private OrderItem firstOrderItem;
@@ -43,10 +51,10 @@ public class OrderServiceIT extends AbstractIntegration {
 
     @BeforeEach
     void setUp() {
-        orderRepository.deleteAll()
-                .zipWith(orderItemRepository.deleteAll())
-                .zipWith(itemRepository.resetAllCartId())
-                .zipWith(itemRepository.resetAllCounts())
+        orderItemRepository.deleteAll()
+                .then(orderRepository.deleteAll())
+                .then(itemRepository.resetAllCartId())
+                .then(itemRepository.resetAllCounts())
                 .block();
         order = orderRepository.save(order).block();
         firstItem = itemRepository.findById(1L)
@@ -83,6 +91,8 @@ public class OrderServiceIT extends AbstractIntegration {
         @Test
         @DisplayName("Успешная покупка")
         void successBuy() {
+            //WHEN
+            Mockito.when(paymentClient.pay(any())).thenReturn(Mono.just(new BigDecimal("1000.00")));
             //THEN
             Mono<OrderDto> actualResult = service.buy();
             StepVerifier.create(actualResult)

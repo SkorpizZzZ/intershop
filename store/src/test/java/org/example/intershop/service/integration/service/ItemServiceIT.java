@@ -11,14 +11,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ItemServiceIT extends AbstractIntegration {
 
@@ -26,12 +29,17 @@ class ItemServiceIT extends AbstractIntegration {
     private ItemService service;
     @Autowired
     private ItemRepository itemRepository;
+    @Autowired
+    private CacheManager cacheManager;
 
     @BeforeEach
     void setUp() {
-        itemRepository.resetAllCounts()
-                .zipWith(itemRepository.resetAllCartId())
-                .block();
+        Mono.when(
+                itemRepository.resetAllCounts(),
+                itemRepository.resetAllCartId()
+        ).block();
+        Objects.requireNonNull(cacheManager.getCache("item")).clear();
+        Objects.requireNonNull(cacheManager.getCache("items")).clear();
     }
 
     @Nested
@@ -41,24 +49,38 @@ class ItemServiceIT extends AbstractIntegration {
         @Test
         @DisplayName("Title не передан")
         void findAll() {
-            service.findAll(PageRequest.of(0, 20), null)
+            //GIVEN
+            PageRequest inputPage = PageRequest.of(0, 20);
+            String cashKey = inputPage + "::" + null;
+            //THEN
+            service.findAll(inputPage, null)
                     .doOnNext(items -> assertThat(items.getTotalElements()).isEqualTo(17))
                     .block();
+            Page<ItemDto> actualCachedPage = Objects.requireNonNull(cacheManager.getCache("items")).get(cashKey, Page.class);
+            assertNotNull(actualCachedPage);
+            assertThat(actualCachedPage.getTotalElements()).isEqualTo(17);
         }
 
         @Test
         @DisplayName("Title передан")
         void byTitle() {
             //GIVEN
-            String expectedResult = "Галстук";
+            String title = "Галстук";
+            PageRequest inputPage = PageRequest.of(0, 20);
+            String cashKey = inputPage + "::" + title;
             //WHEN
-            Mono<Page<ItemDto>> actualResult = service.findAll(PageRequest.of(0, 20), "Галстук");
+            Mono<Page<ItemDto>> actualResult = service.findAll(inputPage, title);
             //THEN
             StepVerifier.create(actualResult)
-                            .assertNext(itemDtos -> {
-                                assertThat(itemDtos.getTotalElements()).isEqualTo(1);
-                                assertThat(itemDtos.getContent().getFirst().title()).isEqualTo(expectedResult);
-                            }).verifyComplete();
+                    .assertNext(itemDtos -> {
+                        assertThat(itemDtos.getTotalElements()).isEqualTo(1);
+                        assertThat(itemDtos.getContent().getFirst().title()).isEqualTo(title);
+                    }).verifyComplete();
+            Page<ItemDto> actualCachedPage = Objects.requireNonNull(cacheManager.getCache("items"))
+                    .get(cashKey, Page.class);
+            assertNotNull(actualCachedPage);
+            assertThat(actualCachedPage.getTotalElements()).isEqualTo(1);
+            assertThat(actualCachedPage.getContent().getFirst().title()).isEqualTo(title);
         }
     }
 
@@ -71,6 +93,11 @@ class ItemServiceIT extends AbstractIntegration {
             service.findById(1L)
                     .doOnNext(itemDto -> assertThat(itemDto.id()).isEqualTo(1L))
                     .block();
+
+            ItemDto cachedItem = Objects.requireNonNull(cacheManager.getCache("item"))
+                    .get(1L, ItemDto.class);
+            assertNotNull(cachedItem);
+            assertEquals(1L, cachedItem.id());
         }
 
         @Test
@@ -84,6 +111,9 @@ class ItemServiceIT extends AbstractIntegration {
                             throwable instanceof BusinessException &&
                             throwable.getMessage().equals(String.format("Item with id = %s not found", Long.MAX_VALUE)))
                     .verify();
+            ItemDto cachedItem = Objects.requireNonNull(cacheManager.getCache("item"))
+                    .get(Long.MAX_VALUE, ItemDto.class);
+            assertNull(cachedItem);
         }
     }
 
@@ -151,6 +181,8 @@ class ItemServiceIT extends AbstractIntegration {
                     .collectList()
                     .doOnNext(actualResult -> assertThat(actualResult).isEmpty())
                     .block();
+            List<ItemDto> items = Objects.requireNonNull(cacheManager.getCache("items")).get("1", List.class);
+            assertThat(items).isEmpty();
         }
 
         @Test
@@ -172,6 +204,8 @@ class ItemServiceIT extends AbstractIntegration {
             StepVerifier.create(actualResult)
                     .assertNext(result -> assertThat(result).hasSize(2))
                     .verifyComplete();
+            List<ItemDto> items = Objects.requireNonNull(cacheManager.getCache("items")).get("1", List.class);
+            assertThat(items).hasSize(2);
         }
     }
 }

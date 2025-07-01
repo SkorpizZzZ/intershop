@@ -10,7 +10,6 @@ import org.example.intershop.repository.ItemRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +42,12 @@ public class ItemService {
                 .map(itemMapper::itemEntityToItemDto)
                 .collectList()
                 .zipWith(itemRepository.countAllByTitleIgnoreCase(title))
-                .map(tuple -> new PageImpl<>(tuple.getT1(), page, tuple.getT2()));
+                .map(tuple -> new RestPage<>(
+                        tuple.getT1(),
+                        page.getPageNumber(),
+                        page.getPageSize(),
+                        tuple.getT2())
+                );
     }
 
     @Transactional(readOnly = true)

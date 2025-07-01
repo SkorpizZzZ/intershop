@@ -1,11 +1,9 @@
 package org.example.payment.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.payment.domain.AccountEntity;
 import org.example.payment.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -18,10 +16,6 @@ public class PaymentService {
 
     public Mono<BigDecimal> getBalance() {
         return paymentRepository.getCurrentBalance();
-    }
-
-    public Flux<AccountEntity> findAll() {
-        return paymentRepository.findAll();
     }
 
     @Transactional
@@ -38,7 +32,7 @@ public class PaymentService {
                                 )
                         );
                     }
-                    return paymentRepository.updateBalance(payAmount);
+                    return paymentRepository.withdraw(payAmount);
                 });
     }
 }

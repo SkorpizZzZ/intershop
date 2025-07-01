@@ -1,5 +1,6 @@
 package org.example.intershop.service.unit;
 
+import org.example.intershop.client.HttpPaymentClient;
 import org.example.intershop.domain.Cart;
 import org.example.intershop.domain.Item;
 import org.example.intershop.domain.Order;
@@ -14,6 +15,7 @@ import org.example.intershop.mapper.OrderMapperImpl;
 import org.example.intershop.repository.ItemRepository;
 import org.example.intershop.repository.OrderItemRepository;
 import org.example.intershop.repository.OrderRepository;
+import org.example.intershop.service.OrderItemService;
 import org.example.intershop.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,6 +47,10 @@ class OrderServiceTest {
     private ItemRepository itemRepository;
     @Mock
     private OrderItemRepository orderItemRepository;
+    @Mock
+    private OrderItemService orderItemService;
+    @Mock
+    private HttpPaymentClient paymentClient;
     @Spy
     private OrderMapperImpl orderMapper;
     @Spy
@@ -146,9 +152,9 @@ class OrderServiceTest {
         void successBuy() {
             //WHEN
             when(itemRepository.findAllByCartId(anyLong())).thenReturn(Flux.just(item));
+            when(paymentClient.pay(any())).thenReturn(Mono.just(new BigDecimal("100000.00")));
             when(orderRepository.save(any(Order.class))).thenReturn(Mono.just(order));
-            when(itemRepository.save(any(Item.class))).thenReturn(Mono.just(item));
-            when(orderItemRepository.save(any(OrderItem.class))).thenReturn(Mono.just(orderItem));
+            when(orderItemService.saveOrderItems(anyList(), any())).thenReturn(Flux.just(orderItemDto));
             //THEN
             service.buy().block();
         }

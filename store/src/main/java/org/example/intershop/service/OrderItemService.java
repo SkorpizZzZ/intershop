@@ -9,6 +9,7 @@ import org.example.intershop.mapper.OrderItemMapper;
 import org.example.intershop.repository.ItemRepository;
 import org.example.intershop.repository.OrderItemRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -23,6 +24,7 @@ public class OrderItemService {
     private final OrderItemRepository orderItemRepository;
     private final OrderItemMapper orderItemMapper;
 
+    @Transactional
     public Flux<OrderItemDto> saveOrderItems(List<Item> itemsInCart, Order savedOrder) {
         return Flux.fromIterable(itemsInCart)
                 .flatMap(item -> saveOrderItem(savedOrder, item));

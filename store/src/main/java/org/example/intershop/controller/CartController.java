@@ -34,19 +34,32 @@ public class CartController {
             String decodedError = URLDecoder.decode(error, StandardCharsets.UTF_8);
             model.addAttribute("error", decodedError);
         }
-        return paymentClient.isPaymentServiceUp()
-                .zipWith(itemService.findAllByCartId(1L).collectList())
-                .map(tuple -> {
-                    Boolean isPaymentUp = tuple.getT1();
-                    List<ItemDto> items = tuple.getT2();
-                    model.addAttribute("isPaymentUp", isPaymentUp);
-                    model.addAttribute("items", items);
-                    BigDecimal total = items.stream()
-                            .map(ItemDto::sumPrice)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    model.addAttribute("total", total);
-                    return "cart";
-                });
+        return Mono.zip(
+                paymentClient.isPaymentServiceUp(),
+                itemService.findAllByCartId(1L).collectList()
+        ).flatMap(tuple -> {
+            Boolean isPaymentUp = tuple.getT1();
+            List<ItemDto> items = tuple.getT2();
+
+
+            model.addAttribute("isPaymentUp", isPaymentUp);
+            model.addAttribute("items", items);
+            BigDecimal total = items.stream()
+                    .map(ItemDto::sumPrice)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            model.addAttribute("total", total);
+
+            if (!isPaymentUp) {
+                model.addAttribute("enoughMoney", false);
+                return Mono.just("cart");
+            }
+
+            return paymentClient.getBalance()
+                    .map(balance -> {
+                        model.addAttribute("enoughMoney", total.compareTo(balance) <= 0);
+                        return "cart";
+                    });
+        });
     }
 
     @PostMapping("/items/{id}")

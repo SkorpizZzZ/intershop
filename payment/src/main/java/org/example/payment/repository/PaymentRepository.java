@@ -18,6 +18,13 @@ public interface PaymentRepository extends R2dbcRepository<AccountEntity, Long> 
             SET balance = balance - :amount
             WHERE id = 1
             RETURNING balance""")
+    Mono<BigDecimal> withdraw(BigDecimal amount);
+
+    @Query("""
+            UPDATE accounts 
+            SET balance = :amount
+            WHERE id = 1
+            RETURNING balance""")
     Mono<BigDecimal> updateBalance(BigDecimal amount);
 
 }
