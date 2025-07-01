@@ -12,9 +12,7 @@ public interface ItemRepository extends R2dbcRepository<Item, Long> {
 
     Flux<Item> findAllByTitleIgnoreCase(String title, Pageable pageable);
     Mono<Long> countAllByTitleIgnoreCase(String title);
-
     Flux<Item> findAllByCartId(Long cartId);
-
     Flux<Item> findAllBy(Pageable pageable);
 
     @Modifying
