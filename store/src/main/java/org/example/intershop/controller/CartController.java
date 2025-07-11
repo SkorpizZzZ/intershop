@@ -49,7 +49,7 @@ public class CartController {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             model.addAttribute("total", total);
 
-            if (!isPaymentUp) {
+            if (Boolean.FALSE.equals(isPaymentUp)) {
                 model.addAttribute("enoughMoney", false);
                 return Mono.just("cart");
             }

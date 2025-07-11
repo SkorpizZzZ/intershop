@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="create-users-table" author="ilgiznigmatullin (generated)">
+        <preConditions>
+            <and>
+                <not>
+                    <tableExists tableName="users" schemaName="${schemaName}"/>
+                </not>
+                <dbms type="postgresql"/>
+            </and>
+        </preConditions>
+
+        <createTable tableName="users" schemaName="${schemaName}">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="username" type="varchar">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="users" schemaName="${schemaName}"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

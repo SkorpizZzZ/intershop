@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration</title>
+</head>
+<body>
+<form th:action="@{{contextPath}/users
+            (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" method="post"
+      enctype="multipart/form-data" th:object="${user}">
+    <label for="username"> Username:
+        <input id="username" type="text" name="username" th:value="*{username}">
+    </label>
+    <br>
+    <label for="password"> Password:
+        <input id="password" type="password" name="password">
+    </label>
+    <br>
+    <div th:each="role : ${roles}">
+        <input th:id="${role}" type="radio" name="role" th:value="${role}" th:checked="${role==user.role}">
+        <label th:for="${role}" th:text="${role}">Role name</label>
+    </div>
+    <button type="submit">Register</button>
+</form>
+</body>
+</html>

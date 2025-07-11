@@ -11,4 +11,5 @@
     <include file="v1/005-insert-items.xml" relativeToChangelogFile="true"/>
     <include file="v1/004-init-orders-schema.xml" relativeToChangelogFile="true"/>
     <include file="v1/006-init-order-item-schema.xml" relativeToChangelogFile="true"/>
+    <include file="v1/007-init-users-schema.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
