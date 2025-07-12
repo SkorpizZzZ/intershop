@@ -1,6 +1,5 @@
 package org.example.intershop.service.integration.service;
 
-import org.example.intershop.domain.Item;
 import org.example.intershop.dto.ItemDto;
 import org.example.intershop.exception.BusinessException;
 import org.example.intershop.repository.ItemRepository;
@@ -17,7 +16,6 @@ import org.springframework.data.domain.PageRequest;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.List;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -168,44 +166,6 @@ class ItemServiceIT extends AbstractIntegration {
                         assertThat(result.count()).isEqualTo(expectedCount);
                         assertThat(result.cartId()).isNull();
                     }).verifyComplete();
-        }
-    }
-
-    @Nested
-    @DisplayName("Поиск по cartId")
-    class FindAllByCartId {
-        @Test
-        @DisplayName("В корзине нет ни одного итема")
-        void cartIsEmpty() {
-            service.findAllByCartId(1L)
-                    .collectList()
-                    .doOnNext(actualResult -> assertThat(actualResult).isEmpty())
-                    .block();
-            List<ItemDto> items = Objects.requireNonNull(cacheManager.getCache("items")).get("1", List.class);
-            assertThat(items).isEmpty();
-        }
-
-        @Test
-        @DisplayName("В корзине 2 итема")
-        void cartHasTwoItems() {
-            //GIVEN
-            Mono<Void> setup = itemRepository.findById(1L)
-                    .zipWith(itemRepository.findById(2L))
-                    .flatMap(tuple -> {
-                        Item firstItem = tuple.getT1();
-                        Item secondItem = tuple.getT2();
-                        firstItem.setCartId(1L);
-                        secondItem.setCartId(1L);
-                        return itemRepository.saveAll(List.of(firstItem, secondItem)).then();
-                    });
-            //WHEN
-            Mono<List<ItemDto>> actualResult = setup.then(service.findAllByCartId(1L).collectList());
-            //THEN
-            StepVerifier.create(actualResult)
-                    .assertNext(result -> assertThat(result).hasSize(2))
-                    .verifyComplete();
-            List<ItemDto> items = Objects.requireNonNull(cacheManager.getCache("items")).get("1", List.class);
-            assertThat(items).hasSize(2);
         }
     }
 }

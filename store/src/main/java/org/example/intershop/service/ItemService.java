@@ -71,10 +71,11 @@ public class ItemService {
                 }).map(itemMapper::itemEntityToItemDto);
     }
 
-    @Transactional(readOnly = true)
-    @Cacheable(value = "items", key = "#cartId")
-    public Flux<ItemDto> findAllByCartId(Long cartId) {
-        return itemRepository.findAllByCartId(cartId)
+    private Mono<ItemDto> updateItem(Item item, Long cartId, String action) {
+        Long calculatedCount = calculateCount(action, item.getCount());
+        item.setCount(calculatedCount);
+        item.setCartId(calculatedCount > 0 ? cartId : null);
+        return itemRepository.save(item)
                 .map(itemMapper::itemEntityToItemDto);
     }
 

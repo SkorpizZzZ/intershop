@@ -254,22 +254,4 @@ class ItemServiceTest {
                     }).verifyComplete();
         }
     }
-
-    @Nested
-    @DisplayName("Поиск Итема по айдишнику корзины")
-    class FindAllByCartId {
-        Long inputId = 1L;
-
-        @Test
-        @DisplayName("Итемы найден")
-        void itemsFound() {
-            //WHEN
-            when(itemRepository.findAllByCartId(anyLong())).thenReturn(Flux.just(item));
-            //THEN
-            Flux<ItemDto> actualResult = service.findAllByCartId(inputId);
-            StepVerifier.create(actualResult.collectList())
-                    .assertNext(result -> assertThat(result).contains(itemDto)
-                    ).verifyComplete();
-        }
-    }
 }
