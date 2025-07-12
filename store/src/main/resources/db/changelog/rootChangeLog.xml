@@ -6,10 +6,11 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <include file="v1/001-init-cart-schema.xml" relativeToChangelogFile="true"/>
-    <include file="v1/002-insert-cart.xml" relativeToChangelogFile="true"/>
-    <include file="v1/003-init-items-schema.xml" relativeToChangelogFile="true"/>
-    <include file="v1/005-insert-items.xml" relativeToChangelogFile="true"/>
-    <include file="v1/004-init-orders-schema.xml" relativeToChangelogFile="true"/>
-    <include file="v1/006-init-order-item-schema.xml" relativeToChangelogFile="true"/>
-    <include file="v1/007-init-users-schema.xml" relativeToChangelogFile="true"/>
+    <include file="v1/002-init-items-schema.xml" relativeToChangelogFile="true"/>
+    <include file="v1/004-insert-items.xml" relativeToChangelogFile="true"/>
+    <include file="v1/003-init-orders-schema.xml" relativeToChangelogFile="true"/>
+    <include file="v1/005-init-order-item-schema.xml" relativeToChangelogFile="true"/>
+    <include file="v1/006-init-users-schema.xml" relativeToChangelogFile="true"/>
+    <include file="v1/007-rename-cart.xml" relativeToChangelogFile="true"/>
+    <include file="v1/008-add-username-column-cart.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

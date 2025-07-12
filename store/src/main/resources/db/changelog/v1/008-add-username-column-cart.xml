@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="add-username-column" author="ilgiznigmatullin (generated)">
+        <preConditions>
+            <and>
+                <tableExists tableName="carts" schemaName="${schemaName}"/>
+                <dbms type="postgresql"/>
+            </and>
+            <and>
+                <not>
+                    <columnExists tableName="carts" columnName="username" schemaName="${schemaName}"/>
+                </not>
+            </and>
+        </preConditions>
+
+        <addColumn tableName="carts">
+            <column name="username" type="varchar">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint baseTableName="carts" baseColumnNames="username" constraintName="fk_carts_users_username"
+                                 referencedTableSchemaName="${schemaName}"
+                                 referencedTableName="users"
+                                 referencedColumnNames="username"/>
+    </changeSet>
+</databaseChangeLog>

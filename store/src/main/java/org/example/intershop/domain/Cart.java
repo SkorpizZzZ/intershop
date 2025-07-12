@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Data
-@Table("cart")
+@Table("carts")
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
@@ -13,4 +13,5 @@ import org.springframework.data.relational.core.mapping.Table;
 public class Cart {
     @Id
     private Long id;
+    private String username;
 }
