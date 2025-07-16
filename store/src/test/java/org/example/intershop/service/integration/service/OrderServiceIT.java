@@ -53,8 +53,7 @@ public class OrderServiceIT extends AbstractIntegration {
     void setUp() {
         orderItemRepository.deleteAll()
                 .then(orderRepository.deleteAll())
-                .then(itemRepository.resetAllCartId())
-                .then(itemRepository.resetAllCounts())
+                .then(itemRepository.resetAllCountsAndCartIds())
                 .block();
         order = orderRepository.save(order).block();
         firstItem = itemRepository.findById(1L)

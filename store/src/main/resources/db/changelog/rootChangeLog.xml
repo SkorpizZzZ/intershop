@@ -13,4 +13,5 @@
     <include file="v1/006-init-users-schema.xml" relativeToChangelogFile="true"/>
     <include file="v1/007-rename-cart.xml" relativeToChangelogFile="true"/>
     <include file="v1/008-add-username-column-cart.xml" relativeToChangelogFile="true"/>
+    <include file="v1/009-init-cart-item-schema.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

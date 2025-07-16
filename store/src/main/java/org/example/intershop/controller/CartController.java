@@ -3,7 +3,9 @@ package org.example.intershop.controller;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.example.intershop.client.HttpPaymentClient;
+import org.example.intershop.dto.CartDto;
 import org.example.intershop.dto.ItemDto;
+import org.example.intershop.service.CartService;
 import org.example.intershop.service.ItemService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,13 +19,13 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 @Controller
 @RequestMapping("/cart")
 @RequiredArgsConstructor
 public class CartController {
 
+    private final CartService cartService;
     private final ItemService itemService;
     private final HttpPaymentClient paymentClient;
 
@@ -36,15 +38,15 @@ public class CartController {
         }
         return Mono.zip(
                 paymentClient.isPaymentServiceUp(),
-                itemService.findAllByCartId(1L).collectList()
+                cartService.getCart()
         ).flatMap(tuple -> {
             Boolean isPaymentUp = tuple.getT1();
-            List<ItemDto> items = tuple.getT2();
+            CartDto cart = tuple.getT2();
 
 
             model.addAttribute("isPaymentUp", isPaymentUp);
-            model.addAttribute("items", items);
-            BigDecimal total = items.stream()
+            model.addAttribute("items", cart.items());
+            BigDecimal total = cart.items().stream()
                     .map(ItemDto::sumPrice)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             model.addAttribute("total", total);

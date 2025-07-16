@@ -33,8 +33,7 @@ class ItemServiceIT extends AbstractIntegration {
     @BeforeEach
     void setUp() {
         Mono.when(
-                itemRepository.resetAllCounts(),
-                itemRepository.resetAllCartId()
+                itemRepository.resetAllCountsAndCartIds()
         ).block();
         Objects.requireNonNull(cacheManager.getCache("item")).clear();
         Objects.requireNonNull(cacheManager.getCache("items")).clear();
