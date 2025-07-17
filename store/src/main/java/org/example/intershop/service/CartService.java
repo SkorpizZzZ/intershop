@@ -9,10 +9,8 @@ import org.example.intershop.mapper.ItemMapper;
 import org.example.intershop.repository.CartItemRepository;
 import org.example.intershop.repository.CartRepository;
 import org.example.intershop.repository.ItemRepository;
+import org.example.intershop.security.service.SecurityService;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -31,12 +29,12 @@ public class CartService {
     private final ItemMapper itemMapper;
     private final CartItemMapper cartItemMapper;
 
+    private final SecurityService securityService;
+
     @Transactional(readOnly = true)
     @Cacheable(value = "items")
     public Mono<CartDto> getCart() {
-        return ReactiveSecurityContextHolder.getContext()
-                .map(SecurityContext::getAuthentication)
-                .map(Authentication::getName)
+        return securityService.getUsername()
                 .flatMap(this::getCartByUsername);
     }
 
