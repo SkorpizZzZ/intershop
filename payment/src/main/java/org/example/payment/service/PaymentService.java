@@ -44,7 +44,8 @@ public class PaymentService {
                                 )
                         );
                     }
-                    return accountRepository.withdraw(payAmount, username);
+                    return accountRepository.withdraw(payAmount, username)
+                            .then(accountRepository.getBalanceByUsername(username));
                 });
     }
 }

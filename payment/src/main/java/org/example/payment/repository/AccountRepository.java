@@ -23,15 +23,15 @@ public interface AccountRepository extends R2dbcRepository<AccountEntity, Long> 
             UPDATE accounts
             SET balance = balance - :amount
             WHERE username = :username
-            RETURNING balance""")
-    Mono<BigDecimal> withdraw(BigDecimal amount, String username);
+            """)
+    Mono<Void> withdraw(BigDecimal amount, String username);
 
     @Modifying
     @Query("""
             UPDATE accounts
             SET balance = :amount
             WHERE username = :username
-            RETURNING balance""")
+            """)
     Mono<BigDecimal> updateBalance(BigDecimal amount, String username);
 
 }
