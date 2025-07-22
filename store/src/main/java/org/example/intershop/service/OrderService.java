@@ -6,6 +6,7 @@ import org.example.intershop.client.HttpPaymentClient;
 import org.example.intershop.domain.Item;
 import org.example.intershop.domain.Order;
 import org.example.intershop.dto.OrderDto;
+import org.example.intershop.dto.OrderItemDto;
 import org.example.intershop.exception.BusinessException;
 import org.example.intershop.exception.PaymentException;
 import org.example.intershop.mapper.OrderItemMapper;
@@ -38,10 +39,7 @@ public class OrderService {
     public Flux<OrderDto> findAll() {
         return cartService.getCart()
                 .flatMapMany(cart -> orderRepository.findAllByCartId(cart.id())
-                        .flatMap(order -> orderItemRepository.findByOrderId(order.getId())
-                                .flatMap(orderItem -> itemRepository.findById(orderItem.getItemId())
-                                        .map(item -> orderItemMapper.orderItemToOrderItemDto(orderItem, item))
-                                )
+                        .flatMap(order -> findItemsInOrderById(order.getId())
                                 .collectList()
                                 .map(orderItems -> OrderDto.builder()
                                         .id(order.getId())
@@ -67,7 +65,8 @@ public class OrderService {
             return paymentClient.pay(totalSum)
                     .flatMap(paymentResult -> saveOrder(itemsInCart, cartId))
                     .onErrorResume(PaymentException.class, e ->
-                            Mono.error(new BusinessException(e.getMessage())));
+                            Mono.error(new BusinessException(e.getMessage()))
+                    );
         });
     }
 
@@ -99,11 +98,7 @@ public class OrderService {
                 .flatMap(cart -> orderRepository.findByIdAndCartId(id, cart.id())
                         .switchIfEmpty(Mono.error(new BusinessException(String.format("Order with id = %s not found", id))))
                         .flatMap(order ->
-                                orderItemRepository.findByOrderId(id)
-                                        .flatMap(foundOrderItem ->
-                                                itemRepository.findById(foundOrderItem.getItemId())
-                                                        .map(itemDto -> orderItemMapper.orderItemToOrderItemDto(foundOrderItem, itemDto))
-                                        )
+                                findItemsInOrderById(id)
                                         .collectList()
                                         .map(orderItemDtos -> OrderDto.builder()
                                                 .id(order.getId())
@@ -112,6 +107,14 @@ public class OrderService {
                                                 .build()
                                         )
                         )
+                );
+    }
+
+    private Flux<OrderItemDto> findItemsInOrderById(Long id) {
+        return orderItemRepository.findByOrderId(id)
+                .flatMap(foundOrderItem ->
+                        itemRepository.findById(foundOrderItem.getItemId())
+                                .map(itemDto -> orderItemMapper.orderItemToOrderItemDto(foundOrderItem, itemDto))
                 );
     }
 }

@@ -1,6 +1,6 @@
 package org.example.payment.unit;
 
-import org.example.payment.repository.PaymentRepository;
+import org.example.payment.repository.AccountRepository;
 import org.example.payment.service.PaymentService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,7 +25,7 @@ public class PaymentServiceTest {
     private PaymentService service;
 
     @Mock
-    private PaymentRepository repository;
+    private AccountRepository repository;
 
     @Nested
     @DisplayName("Получение текущего баланса")

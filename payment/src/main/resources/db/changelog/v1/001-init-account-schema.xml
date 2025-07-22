@@ -19,8 +19,11 @@
             <column name="id" type="bigserial">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="balance" type="numeric(15, 2)">
+            <column name="balance" type="numeric(15, 2)" defaultValue="100000.00">
                 <constraints checkConstraint="balance >= 0"/>
+            </column>
+            <column name="username" type="varchar">
+                <constraints unique="true" nullable="false"/>
             </column>
         </createTable>
         <rollback>

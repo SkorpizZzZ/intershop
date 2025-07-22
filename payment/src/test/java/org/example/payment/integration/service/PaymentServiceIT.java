@@ -1,7 +1,7 @@
 package org.example.payment.integration.service;
 
 import org.example.payment.integration.AbstractIntegration;
-import org.example.payment.repository.PaymentRepository;
+import org.example.payment.repository.AccountRepository;
 import org.example.payment.service.PaymentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +20,7 @@ public class PaymentServiceIT extends AbstractIntegration {
     @Autowired
     private PaymentService service;
     @Autowired
-    private PaymentRepository repository;
+    private AccountRepository repository;
 
     @BeforeEach
     void setUp() {

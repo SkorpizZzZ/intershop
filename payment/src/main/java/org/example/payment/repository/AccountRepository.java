@@ -8,26 +8,30 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 
-public interface PaymentRepository extends R2dbcRepository<AccountEntity, Long> {
+public interface AccountRepository extends R2dbcRepository<AccountEntity, Long> {
 
 
-    @Query("SELECT ac.balance FROM accounts AS ac WHERE ac.id = 1")
-    Mono<BigDecimal> getCurrentBalance();
+    @Query("""
+            SELECT balance
+            FROM accounts
+            WHERE username = :username
+            """)
+    Mono<BigDecimal> getBalanceByUsername(String username);
 
     @Modifying
     @Query("""
-            UPDATE accounts 
+            UPDATE accounts
             SET balance = balance - :amount
-            WHERE id = 1
+            WHERE username = :username
             RETURNING balance""")
-    Mono<BigDecimal> withdraw(BigDecimal amount);
+    Mono<BigDecimal> withdraw(BigDecimal amount, String username);
 
     @Modifying
     @Query("""
-            UPDATE accounts 
+            UPDATE accounts
             SET balance = :amount
-            WHERE id = 1
+            WHERE username = :username
             RETURNING balance""")
-    Mono<BigDecimal> updateBalance(BigDecimal amount);
+    Mono<BigDecimal> updateBalance(BigDecimal amount, String username);
 
 }
