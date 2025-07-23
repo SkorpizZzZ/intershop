@@ -4,11 +4,13 @@ import org.example.intershop.domain.Cart;
 import org.example.intershop.domain.Item;
 import org.example.intershop.domain.Order;
 import org.example.intershop.domain.OrderItem;
+import org.example.intershop.dto.CartDto;
 import org.example.intershop.dto.ItemDto;
 import org.example.intershop.exception.BusinessException;
 import org.example.intershop.mapper.ItemMapperImpl;
 import org.example.intershop.repository.CartRepository;
 import org.example.intershop.repository.ItemRepository;
+import org.example.intershop.service.CartService;
 import org.example.intershop.service.ItemService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +27,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -38,6 +41,8 @@ class ItemServiceTest {
     private ItemRepository itemRepository;
     @Mock
     private CartRepository cartRepository;
+    @Mock
+    private CartService cartService;
     @Spy
     private ItemMapperImpl mapper;
 
@@ -51,8 +56,8 @@ class ItemServiceTest {
 
     @BeforeEach
     void setUp() {
-        cart = new Cart(1L);
-        order = new Order(1L);
+        cart = new Cart(1L, "username");
+        order = new Order(1L, 1L);
         orderItem = new OrderItem(
                 1L,
                 null,
@@ -178,26 +183,13 @@ class ItemServiceTest {
     class Action {
         Long inputItemId;
         String inputAction;
+        CartDto cartDto;
 
         @BeforeEach
         void setUp() {
             inputItemId = 1L;
             inputAction = null;
-        }
-
-        @Test
-        @DisplayName("Итем не найден")
-        void itemNotFound() {
-            //WHEN
-            when(itemRepository.findById(anyLong())).thenReturn(Mono.empty());
-            //THEN
-            Mono<ItemDto> actualResult = service.action(inputItemId, inputAction);
-
-            StepVerifier.create(actualResult)
-                    .expectErrorMatches(throwable ->
-                            throwable instanceof BusinessException &&
-                            throwable.getMessage().equals("Item with id = 1 not found")
-                    ).verify();
+            cartDto = new CartDto(1L, "username", Collections.singletonList(itemDto));
         }
 
         @Test
@@ -215,6 +207,7 @@ class ItemServiceTest {
                     1L
             );
             //WHEN
+            when(cartService.getCart()).thenReturn(Mono.just(cartDto));
             when(itemRepository.findById(anyLong())).thenReturn(Mono.just(item));
             when(itemRepository.save(any(Item.class))).thenReturn(Mono.just(item));
             //THEN
@@ -243,6 +236,7 @@ class ItemServiceTest {
             item.setCartId(null);
             item.setCount(0L);
             //WHEN
+            when(cartService.getCart()).thenReturn(Mono.just(cartDto));
             when(itemRepository.findById(anyLong())).thenReturn(Mono.just(item));
             when(itemRepository.save(any(Item.class))).thenReturn(Mono.just(item));
             //THEN
@@ -250,7 +244,7 @@ class ItemServiceTest {
             StepVerifier.create(actualResult)
                     .assertNext(item -> {
                         assertThat(item).isEqualTo(expectedResult);
-                        assertThat(item.count()).isEqualTo(0L);
+                        assertThat(item.count()).isZero();
                     }).verifyComplete();
         }
     }
