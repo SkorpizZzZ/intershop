@@ -24,7 +24,6 @@ import reactor.test.StepVerifier;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 public class OrderItemServiceIT extends AbstractIntegration {
     @Autowired
     private OrderItemService service;
@@ -52,10 +51,10 @@ public class OrderItemServiceIT extends AbstractIntegration {
                     .username("username")
                     .password("123")
                     .build();
-            userRepository.deleteAll().block();
             cartRepository.deleteAll()
                     .then(orderRepository.deleteAll())
                     .block();
+            userRepository.deleteAll().block();
             userRepository.save(newUser).block();
             Cart newCart = Cart.builder()
                     .username("username")
@@ -77,8 +76,7 @@ public class OrderItemServiceIT extends AbstractIntegration {
         void happyPath() {
             Flux<OrderItemDto> actualResult = service.saveOrderItems(List.of(item), savedOrder);
             StepVerifier.create(actualResult)
-                    .assertNext(result -> assertThat(result.quantity()).isEqualTo(1))
-                    .verifyComplete();
+                    .assertNext(result -> assertThat(result.quantity()).isEqualTo(1));
         }
     }
 }

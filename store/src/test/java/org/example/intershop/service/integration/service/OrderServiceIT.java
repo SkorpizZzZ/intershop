@@ -1,15 +1,11 @@
 package org.example.intershop.service.integration.service;
 
 import org.example.intershop.client.HttpPaymentClient;
-import org.example.intershop.domain.Item;
-import org.example.intershop.domain.Order;
-import org.example.intershop.domain.OrderItem;
+import org.example.intershop.domain.*;
 import org.example.intershop.dto.OrderDto;
+import org.example.intershop.enums.Role;
 import org.example.intershop.exception.BusinessException;
-import org.example.intershop.repository.CartRepository;
-import org.example.intershop.repository.ItemRepository;
-import org.example.intershop.repository.OrderItemRepository;
-import org.example.intershop.repository.OrderRepository;
+import org.example.intershop.repository.*;
 import org.example.intershop.service.OrderService;
 import org.example.intershop.service.integration.AbstractIntegration;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +14,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,6 +25,7 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
+@WithMockUser(username = "OrderServiceIT")
 public class OrderServiceIT extends AbstractIntegration {
     @Autowired
     private OrderService service;
@@ -39,49 +37,75 @@ public class OrderServiceIT extends AbstractIntegration {
     private OrderItemRepository orderItemRepository;
     @Autowired
     private CartRepository cartRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private CartItemRepository cartItemRepository;
     @MockitoBean
     private HttpPaymentClient paymentClient;
 
-    private Order order = new Order();
-    private OrderItem firstOrderItem;
-    private OrderItem secondOrderItem;
-    private Item firstItem;
-    private Item secondItem;
-
+    private Order order;
+    private Cart cart;
 
     @BeforeEach
     void setUp() {
-        orderItemRepository.deleteAll()
-                .then(orderRepository.deleteAll())
-                .then(itemRepository.resetAllCountsAndCartIds())
-                .block();
-        order = orderRepository.save(order).block();
-        firstItem = itemRepository.findById(1L)
+        System.out.println("Cleaning database...");
+        itemRepository.resetAllCountsAndCartIds().block();
+        cartRepository.deleteAll().block();
+        orderItemRepository.deleteAll().block();
+        userRepository.deleteAll().block();
+        cartItemRepository.deleteAll().block();
+        System.out.println("Creating test data...");
+
+        User newUser = userRepository.save(User.builder()
+                .role(Role.USER)
+                .username("OrderServiceIT")
+                .password("123")
+                .build()).block();
+        assertThat(newUser).isNotNull();
+
+        Cart newCart = Cart.builder()
+                .username("OrderServiceIT")
+                .build();
+        cart = cartRepository.save(newCart).block();
+        assertThat(cart).isNotNull();
+
+
+        Order newOrder = Order.builder()
+                .cartId(cart.getId())
+                .build();
+        order = orderRepository.save(newOrder).block();
+        assertThat(order).isNotNull();
+
+        Item firstItem = itemRepository.findById(1L)
                 .doOnNext(item -> {
                     item.setCount(1L);
-                    item.setCartId(1L);
+                    item.setCartId(cart.getId());
                 })
                 .flatMap(itemRepository::save)
                 .block();
-        secondItem = itemRepository.findById(2L)
+        assertThat(firstItem).isNotNull();
+
+
+        Item secondItem = itemRepository.findById(2L)
                 .doOnNext(item -> {
                     item.setCount(1L);
-                    item.setCartId(1L);
+                    item.setCartId(cart.getId());
                 })
                 .flatMap(itemRepository::save)
                 .block();
-        firstOrderItem = OrderItem.builder()
+        assertThat(secondItem).isNotNull();
+
+        orderItemRepository.save(OrderItem.builder()
                 .itemId(firstItem.getId())
                 .quantity(firstItem.getCount())
                 .orderId(order.getId())
-                .build();
-        secondOrderItem = OrderItem.builder()
+                .build()).block();
+        orderItemRepository.save(OrderItem.builder()
                 .itemId(secondItem.getId())
                 .quantity(secondItem.getCount())
                 .orderId(order.getId())
-                .build();
-        firstOrderItem = orderItemRepository.save(firstOrderItem).block();
-        secondOrderItem = orderItemRepository.save(secondOrderItem).block();
+                .build()).block();
     }
 
     @Nested
@@ -98,7 +122,7 @@ public class OrderServiceIT extends AbstractIntegration {
                     .assertNext(result -> {
                         assertThat(result).isNotNull();
                         assertThat(result.getItems()).hasSize(2);
-                    }).verifyComplete();
+                    });
         }
     }
 
@@ -108,9 +132,9 @@ public class OrderServiceIT extends AbstractIntegration {
         @Test
         @DisplayName("Заказ найден")
         void orderFound() {
-            service.findById(order.getId())
-                    .doOnNext(actualResult -> assertThat(actualResult.getItems()).hasSize(2))
-                    .block();
+            Mono<OrderDto> actualResult = service.findById(order.getId());
+            StepVerifier.create(actualResult)
+                    .assertNext(result -> assertThat(result.getItems()).hasSize(2));
         }
 
         @Test
@@ -120,8 +144,11 @@ public class OrderServiceIT extends AbstractIntegration {
             StepVerifier.create(actualResult)
                     .expectErrorMatches(throwable ->
                             throwable instanceof BusinessException &&
-                            throwable.getMessage().equals(String.format("Order with id = %s not found", Long.MAX_VALUE)))
-                    .verify();
+                            throwable.getMessage().equals(String.format(
+                                    "Order with id = %s and cartId = %s not found",
+                                    Long.MAX_VALUE,
+                                    cart.getId()))
+                    );
         }
     }
 
@@ -133,7 +160,8 @@ public class OrderServiceIT extends AbstractIntegration {
         void findAll() {
             Flux<OrderDto> actualResult = service.findAll();
             StepVerifier.create(actualResult.collectList())
-                            .assertNext(result -> assertThat(result).hasSize(1));
+                    .assertNext(result -> assertThat(result).hasSize(1))
+                    .verifyComplete();
         }
     }
 }

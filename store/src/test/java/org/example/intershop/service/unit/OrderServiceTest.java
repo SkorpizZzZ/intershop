@@ -141,7 +141,7 @@ class OrderServiceTest {
             StepVerifier.create(actualResult)
                     .expectErrorMatches(throwable ->
                             throwable instanceof BusinessException &&
-                            throwable.getMessage().equals("Order with id = 1 not found")
+                            throwable.getMessage().equals("Order with id = 1 and cartId = 1 not found")
                     ).verify();
             verify(orderItemRepository, never()).findByOrderId(anyLong());
             verify(itemRepository, never()).findById(anyLong());

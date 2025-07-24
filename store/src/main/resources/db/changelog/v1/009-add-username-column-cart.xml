@@ -17,7 +17,7 @@
             </and>
         </preConditions>
 
-        <addColumn tableName="carts">
+        <addColumn tableName="carts" schemaName="${schemaName}">
             <column name="username" type="varchar">
                 <constraints nullable="false" unique="true"/>
             </column>

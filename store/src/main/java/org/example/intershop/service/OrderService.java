@@ -96,7 +96,9 @@ public class OrderService {
     public Mono<OrderDto> findById(Long id) {
         return cartService.getCart()
                 .flatMap(cart -> orderRepository.findByIdAndCartId(id, cart.id())
-                        .switchIfEmpty(Mono.error(new BusinessException(String.format("Order with id = %s not found", id))))
+                        .switchIfEmpty(Mono.error(new BusinessException(
+                                String.format("Order with id = %s and cartId = %s not found", id, cart.id())
+                        )))
                         .flatMap(order ->
                                 findItemsInOrderById(id)
                                         .collectList()

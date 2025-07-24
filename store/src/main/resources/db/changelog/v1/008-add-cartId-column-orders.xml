@@ -17,7 +17,7 @@
             </and>
         </preConditions>
 
-        <addColumn tableName="orders">
+        <addColumn tableName="orders" schemaName="${schemaName}">
             <column name="cart_id" type="bigint">
                 <constraints nullable="false"/>
             </column>

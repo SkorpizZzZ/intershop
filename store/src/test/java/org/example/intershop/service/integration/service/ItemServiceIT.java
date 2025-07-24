@@ -1,8 +1,13 @@
 package org.example.intershop.service.integration.service;
 
+import org.example.intershop.domain.Cart;
+import org.example.intershop.domain.User;
 import org.example.intershop.dto.ItemDto;
+import org.example.intershop.enums.Role;
 import org.example.intershop.exception.BusinessException;
+import org.example.intershop.repository.CartRepository;
 import org.example.intershop.repository.ItemRepository;
+import org.example.intershop.repository.UserRepository;
 import org.example.intershop.service.ItemService;
 import org.example.intershop.service.integration.AbstractIntegration;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.test.context.support.WithMockUser;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -20,7 +26,6 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-
 class ItemServiceIT extends AbstractIntegration {
 
     @Autowired
@@ -29,6 +34,10 @@ class ItemServiceIT extends AbstractIntegration {
     private ItemRepository itemRepository;
     @Autowired
     private CacheManager cacheManager;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private CartRepository cartRepository;
 
     @BeforeEach
     void setUp() {
@@ -116,7 +125,27 @@ class ItemServiceIT extends AbstractIntegration {
 
     @Nested
     @DisplayName("Убрать/добавить в корзину")
+    @WithMockUser(username = "username")
     class Action {
+
+        Cart cart;
+
+        @BeforeEach
+        void setUp() {
+            User newUser = User.builder()
+                    .role(Role.USER)
+                    .username("username")
+                    .password("123")
+                    .build();
+            cartRepository.deleteAll().block();
+            userRepository.deleteAll().block();
+            userRepository.save(newUser).block();
+            Cart newCart = Cart.builder()
+                    .username("username")
+                    .build();
+            cart = cartRepository.save(newCart).block();
+        }
+
         @Test
         @DisplayName("Добавление итема в корзину")
         void plusAction() {
@@ -140,7 +169,7 @@ class ItemServiceIT extends AbstractIntegration {
             Mono<Void> setup = itemRepository.findById(1L)
                     .flatMap(item -> {
                         item.setCount(1L);
-                        item.setCartId(1L);
+                        item.setCartId(cart.getId());
                         return itemRepository.save(item);
                     }).then();
             //THEN
