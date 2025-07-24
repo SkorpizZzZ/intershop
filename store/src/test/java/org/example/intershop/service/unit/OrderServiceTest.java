@@ -5,16 +5,17 @@ import org.example.intershop.domain.Cart;
 import org.example.intershop.domain.Item;
 import org.example.intershop.domain.Order;
 import org.example.intershop.domain.OrderItem;
+import org.example.intershop.dto.CartDto;
 import org.example.intershop.dto.ItemDto;
 import org.example.intershop.dto.OrderDto;
 import org.example.intershop.dto.OrderItemDto;
 import org.example.intershop.exception.BusinessException;
 import org.example.intershop.mapper.ItemMapperImpl;
 import org.example.intershop.mapper.OrderItemMapperImpl;
-import org.example.intershop.mapper.OrderMapperImpl;
 import org.example.intershop.repository.ItemRepository;
 import org.example.intershop.repository.OrderItemRepository;
 import org.example.intershop.repository.OrderRepository;
+import org.example.intershop.service.CartService;
 import org.example.intershop.service.OrderItemService;
 import org.example.intershop.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,9 +51,9 @@ class OrderServiceTest {
     @Mock
     private OrderItemService orderItemService;
     @Mock
+    private CartService cartService;
+    @Mock
     private HttpPaymentClient paymentClient;
-    @Spy
-    private OrderMapperImpl orderMapper;
     @Spy
     private ItemMapperImpl itemMapper;
     @Spy
@@ -60,6 +61,7 @@ class OrderServiceTest {
 
 
     private Cart cart;
+    private CartDto cartDto;
     private Order order;
     private OrderItem orderItem;
     private Item item;
@@ -70,8 +72,8 @@ class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
-        cart = new Cart(1L);
-        order = new Order(1L);
+        cart = new Cart(1L, "username");
+        order = new Order(1L, 1L);
         orderItem = new OrderItem(
                 1L,
                 null,
@@ -104,7 +106,8 @@ class OrderServiceTest {
                 itemDto,
                 1L
         );
-        orderDto = new OrderDto(1L, Collections.singletonList(orderItemDto));
+        orderDto = new OrderDto(1L, 1L, Collections.singletonList(orderItemDto));
+        cartDto = new CartDto(1L, "username", Collections.singletonList(itemDto));
     }
 
     @Nested
@@ -117,7 +120,8 @@ class OrderServiceTest {
         @DisplayName("Заказ найден")
         void orderFound() {
             //WHEN
-            when(orderRepository.findById(anyLong())).thenReturn(Mono.just(order));
+            when(cartService.getCart()).thenReturn(Mono.just(cartDto));
+            when(orderRepository.findByIdAndCartId(anyLong(), anyLong())).thenReturn(Mono.just(order));
             when(orderItemRepository.findByOrderId(anyLong())).thenReturn(Flux.just(orderItem));
             when(itemRepository.findById(anyLong())).thenReturn(Mono.just(item));
             //THEN
@@ -130,13 +134,14 @@ class OrderServiceTest {
         @DisplayName("Заказ не найден")
         void orderNotFound() {
             //WHEN
-            when(orderRepository.findById(anyLong())).thenReturn(Mono.empty());
+            when(cartService.getCart()).thenReturn(Mono.just(cartDto));
+            when(orderRepository.findByIdAndCartId(anyLong(), anyLong())).thenReturn(Mono.empty());
             //THEN
             Mono<OrderDto> actualResult = service.findById(inputId);
             StepVerifier.create(actualResult)
                     .expectErrorMatches(throwable ->
                             throwable instanceof BusinessException &&
-                            throwable.getMessage().equals("Order with id = 1 not found")
+                            throwable.getMessage().equals("Order with id = 1 and cartId = 1 not found")
                     ).verify();
             verify(orderItemRepository, never()).findByOrderId(anyLong());
             verify(itemRepository, never()).findById(anyLong());
@@ -151,6 +156,7 @@ class OrderServiceTest {
         @DisplayName("Успешная покупка")
         void successBuy() {
             //WHEN
+            when(cartService.getCart()).thenReturn(Mono.just(cartDto));
             when(itemRepository.findAllByCartId(anyLong())).thenReturn(Flux.just(item));
             when(paymentClient.pay(any())).thenReturn(Mono.just(new BigDecimal("100000.00")));
             when(orderRepository.save(any(Order.class))).thenReturn(Mono.just(order));
@@ -168,7 +174,8 @@ class OrderServiceTest {
         @DisplayName("Заказы найдены")
         void ordersFound() {
             //WHEN
-            when(orderRepository.findAll()).thenReturn(Flux.just(order));
+            when(cartService.getCart()).thenReturn(Mono.just(cartDto));
+            when(orderRepository.findAllByCartId(anyLong())).thenReturn(Flux.just(order));
             when(orderItemRepository.findByOrderId(anyLong())).thenReturn(Flux.just(orderItem));
             when(itemRepository.findById(anyLong())).thenReturn(Mono.just(item));
             //THEN

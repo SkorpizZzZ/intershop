@@ -7,6 +7,7 @@
 </head>
 
 <body>
+<div th:insert="~{logout-fragment::header}"></div>
 <a th:href="@{{contextPath}/cart/items
             (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
     <b>КОРЗИНА &cudarrr;</b>

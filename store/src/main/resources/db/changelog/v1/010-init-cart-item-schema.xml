@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet id="create-cart-item-table" author="ilgiznigmatullin (generated)">
+        <preConditions>
+            <and>
+                <not>
+                    <tableExists tableName="cart_item" schemaName="${schemaName}"/>
+                </not>
+                <dbms type="postgresql"/>
+            </and>
+            <and>
+                <tableExists tableName="items" schemaName="${schemaName}"/>
+                <tableExists tableName="carts" schemaName="${schemaName}"/>
+            </and>
+        </preConditions>
+        <createTable tableName="cart_item" schemaName="${schemaName}">
+            <column name="id" type="bigserial">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="cart_id" type="bigint">
+                <constraints foreignKeyName="fk_cart_item_items"
+                             referencedColumnNames="id"
+                             referencedTableName="carts"
+                             referencedTableSchemaName="${schemaName}"/>
+            </column>
+            <column name="item_id" type="bigint">
+                <constraints foreignKeyName="fk_cart_item_orders"
+                             referencedColumnNames="id"
+                             referencedTableName="items"
+                             referencedTableSchemaName="${schemaName}"/>
+            </column>
+            <column name="quantity" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <rollback>
+            <dropTable tableName="cart_item" schemaName="${schemaName}"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

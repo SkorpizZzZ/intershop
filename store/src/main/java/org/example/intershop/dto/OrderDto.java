@@ -1,10 +1,14 @@
 package org.example.intershop.dto;
 
+import lombok.Builder;
+
 import java.math.BigDecimal;
 import java.util.List;
 
+@Builder
 public record OrderDto(
         Long id,
+        Long cartId,
         List<OrderItemDto> orderItems
 ) {
 

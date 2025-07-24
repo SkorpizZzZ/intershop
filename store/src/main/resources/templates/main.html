@@ -7,11 +7,13 @@
 </head>
 
 <body>
-    <a th:href="@{{contextPath}/orders
+<div th:insert="~{logout-fragment::header}"></div>
+<div th:if="${!isAuthenticated}" th:insert="~{login-fragment::header}"></div>
+    <a th:if="${isAuthenticated}" th:href="@{{contextPath}/orders
             (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
         <b>ЗАКАЗЫ &cudarrr;</b>
     </a>
-    <a th:href="@{{contextPath}/cart/items
+    <a th:if="${isAuthenticated}" th:href="@{{contextPath}/cart/items
                 (contextPath=${@environment.getProperty('spring.webflux.base-path')})}" style="float:right;">
         <b>КОРЗИНА &cudarrr;</b>
     </a>
@@ -79,7 +81,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <form th:action="@{{contextPath}/main/items/{id}
+                            <form th:if="${isAuthenticated}" th:action="@{{contextPath}/main/items/{id}
                             (contextPath=${@environment.getProperty('spring.webflux.base-path')},
                             id=${item.id()})}" method="post">
                                 <button name="action" value="minus">-</button>

@@ -1,9 +1,13 @@
 package org.example.intershop.service.integration.service;
 
-import org.example.intershop.domain.Item;
+import org.example.intershop.domain.Cart;
+import org.example.intershop.domain.User;
 import org.example.intershop.dto.ItemDto;
+import org.example.intershop.enums.Role;
 import org.example.intershop.exception.BusinessException;
+import org.example.intershop.repository.CartRepository;
 import org.example.intershop.repository.ItemRepository;
+import org.example.intershop.repository.UserRepository;
 import org.example.intershop.service.ItemService;
 import org.example.intershop.service.integration.AbstractIntegration;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,15 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.test.context.support.WithMockUser;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.List;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-
 class ItemServiceIT extends AbstractIntegration {
 
     @Autowired
@@ -31,12 +34,15 @@ class ItemServiceIT extends AbstractIntegration {
     private ItemRepository itemRepository;
     @Autowired
     private CacheManager cacheManager;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private CartRepository cartRepository;
 
     @BeforeEach
     void setUp() {
         Mono.when(
-                itemRepository.resetAllCounts(),
-                itemRepository.resetAllCartId()
+                itemRepository.resetAllCountsAndCartIds()
         ).block();
         Objects.requireNonNull(cacheManager.getCache("item")).clear();
         Objects.requireNonNull(cacheManager.getCache("items")).clear();
@@ -119,7 +125,27 @@ class ItemServiceIT extends AbstractIntegration {
 
     @Nested
     @DisplayName("Убрать/добавить в корзину")
+    @WithMockUser(username = "username")
     class Action {
+
+        Cart cart;
+
+        @BeforeEach
+        void setUp() {
+            User newUser = User.builder()
+                    .role(Role.USER)
+                    .username("username")
+                    .password("123")
+                    .build();
+            cartRepository.deleteAll().block();
+            userRepository.deleteAll().block();
+            userRepository.save(newUser).block();
+            Cart newCart = Cart.builder()
+                    .username("username")
+                    .build();
+            cart = cartRepository.save(newCart).block();
+        }
+
         @Test
         @DisplayName("Добавление итема в корзину")
         void plusAction() {
@@ -143,7 +169,7 @@ class ItemServiceIT extends AbstractIntegration {
             Mono<Void> setup = itemRepository.findById(1L)
                     .flatMap(item -> {
                         item.setCount(1L);
-                        item.setCartId(1L);
+                        item.setCartId(cart.getId());
                         return itemRepository.save(item);
                     }).then();
             //THEN
@@ -168,44 +194,6 @@ class ItemServiceIT extends AbstractIntegration {
                         assertThat(result.count()).isEqualTo(expectedCount);
                         assertThat(result.cartId()).isNull();
                     }).verifyComplete();
-        }
-    }
-
-    @Nested
-    @DisplayName("Поиск по cartId")
-    class FindAllByCartId {
-        @Test
-        @DisplayName("В корзине нет ни одного итема")
-        void cartIsEmpty() {
-            service.findAllByCartId(1L)
-                    .collectList()
-                    .doOnNext(actualResult -> assertThat(actualResult).isEmpty())
-                    .block();
-            List<ItemDto> items = Objects.requireNonNull(cacheManager.getCache("items")).get("1", List.class);
-            assertThat(items).isEmpty();
-        }
-
-        @Test
-        @DisplayName("В корзине 2 итема")
-        void cartHasTwoItems() {
-            //GIVEN
-            Mono<Void> setup = itemRepository.findById(1L)
-                    .zipWith(itemRepository.findById(2L))
-                    .flatMap(tuple -> {
-                        Item firstItem = tuple.getT1();
-                        Item secondItem = tuple.getT2();
-                        firstItem.setCartId(1L);
-                        secondItem.setCartId(1L);
-                        return itemRepository.saveAll(List.of(firstItem, secondItem)).then();
-                    });
-            //WHEN
-            Mono<List<ItemDto>> actualResult = setup.then(service.findAllByCartId(1L).collectList());
-            //THEN
-            StepVerifier.create(actualResult)
-                    .assertNext(result -> assertThat(result).hasSize(2))
-                    .verifyComplete();
-            List<ItemDto> items = Objects.requireNonNull(cacheManager.getCache("items")).get("1", List.class);
-            assertThat(items).hasSize(2);
         }
     }
 }

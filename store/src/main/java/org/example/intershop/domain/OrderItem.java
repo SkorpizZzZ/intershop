@@ -9,8 +9,6 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table(name = "order_item", schema = "#{@dataBaseConfiguration.DEFAULT_SCHEMA}")
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-@EqualsAndHashCode
 @Builder
 public class OrderItem {
 

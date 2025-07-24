@@ -1,6 +1,8 @@
 package org.example.payment.unit;
 
-import org.example.payment.repository.PaymentRepository;
+import org.example.payment.domain.AccountEntity;
+import org.example.payment.exception.NotEnoughMoneyException;
+import org.example.payment.repository.AccountRepository;
 import org.example.payment.service.PaymentService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,6 +17,7 @@ import reactor.test.StepVerifier;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -25,17 +28,38 @@ public class PaymentServiceTest {
     private PaymentService service;
 
     @Mock
-    private PaymentRepository repository;
+    private AccountRepository repository;
 
     @Nested
     @DisplayName("Получение текущего баланса")
     class GetBalance {
+        String inputName = "foo";
+
         @Test
-        void getBalance() {
+        @DisplayName("Новый юзер")
+        void newUser() {
+            //GIVEN
+            AccountEntity accountEntity = new AccountEntity();
+            accountEntity.setUsername(inputName);
+            accountEntity.setBalance(new BigDecimal("100000.00"));
+            Mono<AccountEntity> newAcc = Mono.just(accountEntity);
             //WHEN
-            when(repository.getCurrentBalance()).thenReturn(Mono.just(BigDecimal.ONE));
+            when(repository.getBalanceByUsername(anyString())).thenReturn(Mono.empty());
+            when(repository.save(any())).thenReturn(newAcc);
             //THEN
-            Mono<BigDecimal> actualResult = service.getBalance();
+            Mono<BigDecimal> actualResult = service.getBalance(inputName);
+            StepVerifier.create(actualResult)
+                    .assertNext(result -> assertThat(result).isEqualTo(new BigDecimal("100000.00")))
+                    .verifyComplete();
+        }
+
+        @Test
+        @DisplayName("Аккаунт уже существует")
+        void accountAlreadyExists() {
+            //WHEN
+            when(repository.getBalanceByUsername(anyString())).thenReturn(Mono.just(BigDecimal.ONE));
+            //THEN
+            Mono<BigDecimal> actualResult = service.getBalance(inputName);
             StepVerifier.create(actualResult)
                     .assertNext(result -> assertThat(result).isEqualTo(BigDecimal.ONE))
                     .verifyComplete();
@@ -46,6 +70,7 @@ public class PaymentServiceTest {
     @DisplayName("Выполнение платежа")
     class Pay {
         Mono<BigDecimal> inputAmount = Mono.just(BigDecimal.TWO);
+        String inputName = "foo";
 
         @Test
         @DisplayName("Платеж выполнился успешно")
@@ -53,10 +78,12 @@ public class PaymentServiceTest {
             //GIVEN
             BigDecimal expectedResult = new BigDecimal("8.00");
             //WHEN
-            when(repository.getCurrentBalance()).thenReturn(Mono.just(BigDecimal.TEN));
-            when(repository.withdraw(any(BigDecimal.class))).thenReturn(Mono.just(new BigDecimal("8.00")));
+            when(repository.getBalanceByUsername(anyString()))
+                    .thenReturn(Mono.just(BigDecimal.TEN))
+                    .thenReturn(Mono.just(new BigDecimal("8.00")));
+            when(repository.withdraw(any(BigDecimal.class), anyString())).thenReturn(Mono.empty());
             //THEN
-            Mono<BigDecimal> actualResult = service.pay(inputAmount);
+            Mono<BigDecimal> actualResult = service.pay(inputAmount, inputName);
             StepVerifier.create(actualResult)
                     .assertNext(result -> assertThat(result).isEqualTo(expectedResult))
                     .verifyComplete();
@@ -66,12 +93,12 @@ public class PaymentServiceTest {
         @DisplayName("На счете недостаточно средств")
         void notEnoughMoney() {
             //WHEN
-            when(repository.getCurrentBalance()).thenReturn(Mono.just(BigDecimal.ONE));
+            when(repository.getBalanceByUsername(anyString())).thenReturn(Mono.just(BigDecimal.ONE));
             //THEN
-            Mono<BigDecimal> actualResult = service.pay(inputAmount);
+            Mono<BigDecimal> actualResult = service.pay(inputAmount, inputName);
             StepVerifier.create(actualResult)
                     .expectErrorMatches(throwable ->
-                            throwable instanceof IllegalArgumentException &&
+                            throwable instanceof NotEnoughMoneyException &&
                             throwable.getMessage().equals("Недостаточно средств на балансе. Сумма баланса 1")
                     ).verify();
         }

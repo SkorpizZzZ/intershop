@@ -2,10 +2,13 @@ package org.example.intershop.service;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.example.intershop.domain.Item;
+import org.example.intershop.dto.CartDto;
 import org.example.intershop.dto.ItemDto;
 import org.example.intershop.dto.RestPage;
 import org.example.intershop.exception.BusinessException;
 import org.example.intershop.mapper.ItemMapper;
+import org.example.intershop.repository.CartRepository;
 import org.example.intershop.repository.ItemRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -21,7 +23,10 @@ import reactor.core.publisher.Mono;
 public class ItemService {
 
     private final ItemRepository itemRepository;
+    private final CartRepository cartRepository;
     private final ItemMapper itemMapper;
+
+    private final CartService cartService;
 
     @Transactional(readOnly = true)
     @Cacheable(value = "items", key = "#page + '::' + #title")
@@ -61,20 +66,19 @@ public class ItemService {
     @Transactional
     @CacheEvict(value = "items", allEntries = true)
     public Mono<ItemDto> action(Long id, String action) {
-        return itemRepository.findById(id)
-                .switchIfEmpty(Mono.error(new BusinessException(String.format("Item with id = %s not found", id))))
-                .flatMap(foundItem -> {
-                    Long calculatedCount = calculateCount(action, foundItem.getCount());
-                    foundItem.setCount(calculatedCount);
-                    foundItem.setCartId(calculatedCount > 0 ? 1L : null);
-                    return itemRepository.save(foundItem);
-                }).map(itemMapper::itemEntityToItemDto);
+        return cartService.getCart()
+                .map(CartDto::id)
+                .flatMap(cartId -> itemRepository.findById(id)
+                            .flatMap(item -> updateItem(item, cartId, action))
+                );
     }
 
-    @Transactional(readOnly = true)
-    @Cacheable(value = "items", key = "#cartId")
-    public Flux<ItemDto> findAllByCartId(Long cartId) {
-        return itemRepository.findAllByCartId(cartId)
+    @Transactional
+    public Mono<ItemDto> updateItem(Item item, Long cartId, String action) {
+        Long calculatedCount = calculateCount(action, item.getCount());
+        item.setCount(calculatedCount);
+        item.setCartId(calculatedCount > 0 ? cartId : null);
+        return itemRepository.save(item)
                 .map(itemMapper::itemEntityToItemDto);
     }
 
@@ -82,6 +86,7 @@ public class ItemService {
         return switch (action.toLowerCase()) {
             case "minus" -> currentCount > 0 ? --currentCount : 0L;
             case "plus" -> ++currentCount;
+            case "current" -> currentCount;
             default -> 0L;
         };
     }

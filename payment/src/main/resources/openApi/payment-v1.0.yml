@@ -4,9 +4,15 @@ info:
   version: 1.0.0
   description: API для получения баланса и оплаты товара
 paths:
-  /balance:
+  /balance/{username}:
     get:
-      summary: Получение суммы баланса на счете
+      summary: Получение суммы баланса на счете по username
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Сумма баланса
@@ -20,6 +26,12 @@ paths:
                 example: "150.00"
     post:
       summary: Списание суммы с баланса на счете
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -60,3 +72,7 @@ components:
           format: decimal
           description: Сумма на счете
           example: "150.00"
+        username:
+          type: string
+          description: Владелец счета
+          example: "Mike"

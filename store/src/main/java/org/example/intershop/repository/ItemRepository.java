@@ -16,10 +16,6 @@ public interface ItemRepository extends R2dbcRepository<Item, Long> {
     Flux<Item> findAllBy(Pageable pageable);
 
     @Modifying
-    @Query("UPDATE items SET count = 0")
-    Mono<Void> resetAllCounts();
-
-    @Modifying
-    @Query("UPDATE items SET cart_id = null")
-    Mono<Void> resetAllCartId();
+    @Query("UPDATE items SET count = 0, cart_id = null")
+    Mono<Void> resetAllCountsAndCartIds();
 }

@@ -6,6 +6,7 @@ import org.example.intershop.client.HttpPaymentClient;
 import org.example.intershop.domain.Item;
 import org.example.intershop.domain.Order;
 import org.example.intershop.dto.OrderDto;
+import org.example.intershop.dto.OrderItemDto;
 import org.example.intershop.exception.BusinessException;
 import org.example.intershop.exception.PaymentException;
 import org.example.intershop.mapper.OrderItemMapper;
@@ -31,35 +32,41 @@ public class OrderService {
     private final OrderItemMapper orderItemMapper;
 
     private final OrderItemService orderItemService;
+    private final CartService cartService;
     private final HttpPaymentClient paymentClient;
 
     @Transactional(readOnly = true)
     public Flux<OrderDto> findAll() {
-        return orderRepository.findAll()
-                .flatMap(order -> orderItemRepository.findByOrderId(order.getId())
-                        .flatMap(orderItem -> itemRepository.findById(orderItem.getItemId())
-                                .map(item -> orderItemMapper.orderItemToOrderItemDto(orderItem, item))
-                        )
-                        .collectList()
-                        .map(orderItems -> new OrderDto(order.getId(), orderItems))
+        return cartService.getCart()
+                .flatMapMany(cart -> orderRepository.findAllByCartId(cart.id())
+                        .flatMap(order -> findItemsInOrderById(order.getId())
+                                .collectList()
+                                .map(orderItems -> OrderDto.builder()
+                                        .id(order.getId())
+                                        .cartId(cart.id())
+                                        .orderItems(orderItems)
+                                        .build()
+                                ))
                 );
     }
 
     @Transactional
     @CacheEvict(value = "items", allEntries = true)
     public Mono<OrderDto> buy() {
-        return itemRepository.findAllByCartId(1L)
-                .collectList()
-                .flatMap(this::processOrder);
+        return cartService.getCart()
+                .flatMap(cart -> itemRepository.findAllByCartId(cart.id())
+                        .collectList()
+                        .flatMap(items -> processOrder(items, cart.id())));
     }
 
-    private Mono<OrderDto> processOrder(List<Item> itemsInCart) {
+    private Mono<OrderDto> processOrder(List<Item> itemsInCart, Long cartId) {
         return Mono.defer(() -> {
             BigDecimal totalSum = calculateTotalSum(itemsInCart);
             return paymentClient.pay(totalSum)
-                    .flatMap(paymentResult -> saveOrder(itemsInCart))
+                    .flatMap(paymentResult -> saveOrder(itemsInCart, cartId))
                     .onErrorResume(PaymentException.class, e ->
-                            Mono.error(new BusinessException(e.getMessage())));
+                            Mono.error(new BusinessException(e.getMessage()))
+                    );
         });
     }
 
@@ -69,26 +76,47 @@ public class OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private Mono<OrderDto> saveOrder(List<Item> itemsInCart) {
-        return orderRepository.save(new Order())
+    private Mono<OrderDto> saveOrder(List<Item> itemsInCart, Long cartId) {
+        return orderRepository.save(Order.builder()
+                        .cartId(cartId)
+                        .build()
+                )
                 .flatMap(savedOrder -> orderItemService.saveOrderItems(itemsInCart, savedOrder)
                         .collectList()
-                        .map(savedOrderItems -> new OrderDto(savedOrder.getId(), savedOrderItems))
+                        .map(savedOrderItems -> OrderDto.builder()
+                                .id(savedOrder.getId())
+                                .cartId(cartId)
+                                .orderItems(savedOrderItems)
+                                .build()
+                        )
                 );
     }
 
     @Transactional(readOnly = true)
     public Mono<OrderDto> findById(Long id) {
-        return orderRepository.findById(id)
-                .switchIfEmpty(Mono.error(new BusinessException(String.format("Order with id = %s not found", id))))
-                .flatMap(order ->
-                        orderItemRepository.findByOrderId(id)
-                                .flatMap(foundOrderItem ->
-                                        itemRepository.findById(foundOrderItem.getItemId())
-                                                .map(itemDto -> orderItemMapper.orderItemToOrderItemDto(foundOrderItem, itemDto))
-                                )
-                                .collectList()
-                                .map(orderItemDtos -> new OrderDto(order.getId(), orderItemDtos))
+        return cartService.getCart()
+                .flatMap(cart -> orderRepository.findByIdAndCartId(id, cart.id())
+                        .switchIfEmpty(Mono.error(new BusinessException(
+                                String.format("Order with id = %s and cartId = %s not found", id, cart.id())
+                        )))
+                        .flatMap(order ->
+                                findItemsInOrderById(id)
+                                        .collectList()
+                                        .map(orderItemDtos -> OrderDto.builder()
+                                                .id(order.getId())
+                                                .cartId(order.getCartId())
+                                                .orderItems(orderItemDtos)
+                                                .build()
+                                        )
+                        )
+                );
+    }
+
+    private Flux<OrderItemDto> findItemsInOrderById(Long id) {
+        return orderItemRepository.findByOrderId(id)
+                .flatMap(foundOrderItem ->
+                        itemRepository.findById(foundOrderItem.getItemId())
+                                .map(itemDto -> orderItemMapper.orderItemToOrderItemDto(foundOrderItem, itemDto))
                 );
     }
 }

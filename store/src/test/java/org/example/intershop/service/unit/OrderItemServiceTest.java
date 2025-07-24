@@ -65,7 +65,7 @@ public class OrderItemServiceTest {
                     .title("title")
                     .cartId(null)
                     .build();
-            inputOrder = new Order(1L);
+            inputOrder = new Order(1L, 1L);
         }
 
         @Test

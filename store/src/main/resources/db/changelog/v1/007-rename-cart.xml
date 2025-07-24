@@ -4,23 +4,14 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
-    <changeSet id="create-accounts-table" author="ilgiznigmatullin (generated)">
+    <changeSet id="rename-cart" author="ilgiznigmatullin (generated)">
         <preConditions>
             <and>
-                    <tableExists tableName="accounts" schemaName="${schemaName}"/>
-            </and>
-            <and>
+                <tableExists tableName="cart" schemaName="${schemaName}"/>
                 <dbms type="postgresql"/>
             </and>
         </preConditions>
 
-        <insert tableName="accounts" schemaName="${schemaName}">
-            <column name="id" value="1"/>
-            <column name="balance" value="100000"/>
-        </insert>
-
-        <rollback>
-            <dropTable tableName="cart" schemaName="${schemaName}"/>
-        </rollback>
+        <renameTable oldTableName="cart" newTableName="carts" schemaName="${schemaName}"/>
     </changeSet>
 </databaseChangeLog>

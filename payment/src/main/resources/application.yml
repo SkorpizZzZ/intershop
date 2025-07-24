@@ -1,2 +1,9 @@
 server:
   port: "${submodule.server.payment.port}"
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8888/realms/master
