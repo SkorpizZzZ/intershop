@@ -21,19 +21,19 @@ public class PaymentServiceIT extends AbstractIntegration {
     @Autowired
     private AccountRepository repository;
 
-    private final String USERNAME = "foo";
+    private final Long USER_ID = 1L;
 
     @BeforeAll
     void saveNewAcc() {
         AccountEntity accountEntity = new AccountEntity();
-        accountEntity.setUsername(USERNAME);
+        accountEntity.setUserId(USER_ID);
         accountEntity.setBalance(new BigDecimal("100000.00"));
         repository.save(accountEntity).block();
     }
 
     @BeforeEach
     void setUp() {
-        repository.updateBalance(new BigDecimal("100000.00"), USERNAME)
+        repository.updateBalance(new BigDecimal("100000.00"), USER_ID)
                 .block();
     }
 
@@ -46,7 +46,7 @@ public class PaymentServiceIT extends AbstractIntegration {
             BigDecimal inputParam = new BigDecimal("80000.00");
             BigDecimal expectedResult = new BigDecimal("20000.00");
             //THEN
-            Mono<BigDecimal> actualResult = service.pay(Mono.just(inputParam), USERNAME);
+            Mono<BigDecimal> actualResult = service.pay(Mono.just(inputParam), USER_ID);
             StepVerifier.create(actualResult)
                     .assertNext(result -> assertThat(result).isEqualTo(expectedResult))
                     .verifyComplete();
@@ -58,7 +58,7 @@ public class PaymentServiceIT extends AbstractIntegration {
             //GIVEN
             BigDecimal inputParam = new BigDecimal("20000000");
             //THEN
-            Mono<BigDecimal> actualResult = service.pay(Mono.just(inputParam), USERNAME);
+            Mono<BigDecimal> actualResult = service.pay(Mono.just(inputParam), USER_ID);
             StepVerifier.create(actualResult)
                     .expectErrorMatches(throwable ->
                             throwable instanceof NotEnoughMoneyException &&
@@ -77,7 +77,7 @@ public class PaymentServiceIT extends AbstractIntegration {
             //GIVEN
             BigDecimal expectedResult = new BigDecimal("100000.00");
             //THEN
-            Mono<BigDecimal> actualResult = service.getBalance(USERNAME);
+            Mono<BigDecimal> actualResult = service.getBalance(USER_ID);
             StepVerifier.create(actualResult)
                     .assertNext(balance -> assertThat(balance).isEqualTo(expectedResult))
                     .verifyComplete();

@@ -8,6 +8,7 @@ import org.example.intershop.enums.Role;
 import org.example.intershop.mapper.UserMapper;
 import org.example.intershop.repository.CartRepository;
 import org.example.intershop.repository.UserRepository;
+import org.example.intershop.security.service.SecurityService;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,7 +22,15 @@ public class UserService implements ReactiveUserDetailsService {
 
     private final UserRepository userRepository;
     private final CartRepository cartRepository;
+
+    private final SecurityService securityService;
+
     private final UserMapper userMapper;
+
+    public Mono<Long> getId() {
+        return securityService.getUsername()
+                        .flatMap(userRepository::getIdByUsername);
+    }
 
     @Transactional
     public Mono<UserDto> create(String username, String encodedPassword, Role role) {

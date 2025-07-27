@@ -14,24 +14,24 @@ public interface AccountRepository extends R2dbcRepository<AccountEntity, Long> 
     @Query("""
             SELECT balance
             FROM accounts
-            WHERE username = :username
+            WHERE user_id = :userId
             """)
-    Mono<BigDecimal> getBalanceByUsername(String username);
+    Mono<BigDecimal> getBalanceByUserId(Long userId);
 
     @Modifying
     @Query("""
             UPDATE accounts
             SET balance = balance - :amount
-            WHERE username = :username
+            WHERE user_id = :userId
             """)
-    Mono<Void> withdraw(BigDecimal amount, String username);
+    Mono<Void> withdraw(BigDecimal amount, Long userId);
 
     @Modifying
     @Query("""
             UPDATE accounts
             SET balance = :amount
-            WHERE username = :username
+            WHERE user_id = :userId
             """)
-    Mono<BigDecimal> updateBalance(BigDecimal amount, String username);
+    Mono<BigDecimal> updateBalance(BigDecimal amount, Long userId);
 
 }

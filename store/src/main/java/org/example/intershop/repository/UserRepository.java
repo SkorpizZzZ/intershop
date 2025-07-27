@@ -8,4 +8,6 @@ public interface UserRepository extends R2dbcRepository<User, String> {
     Mono<User> findByUsername(String username);
 
     Mono<User> save(User userDto);
+
+    Mono<Long> getIdByUsername(String username);
 }

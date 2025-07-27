@@ -17,22 +17,22 @@ public class PaymentService {
 
     private final AccountRepository accountRepository;
 
-    public Mono<BigDecimal> getBalance(String username) {
-        return accountRepository.getBalanceByUsername(username)
-                .switchIfEmpty(Mono.defer(() -> createAccount(username)
+    public Mono<BigDecimal> getBalance(Long userId) {
+        return accountRepository.getBalanceByUserId(userId)
+                .switchIfEmpty(Mono.defer(() -> createAccount(userId)
                         .map(Account::getBalance)));
     }
 
-    private Mono<AccountEntity> createAccount(String username) {
+    private Mono<AccountEntity> createAccount(Long userId) {
         AccountEntity accountEntity = new AccountEntity();
-        accountEntity.setUsername(username);
+        accountEntity.setUserId(userId);
         accountEntity.setBalance(new BigDecimal("100000.00"));
         return accountRepository.save(accountEntity);
     }
 
     @Transactional
-    public Mono<BigDecimal> pay(Mono<BigDecimal> amount, String username) {
-        return accountRepository.getBalanceByUsername(username)
+    public Mono<BigDecimal> pay(Mono<BigDecimal> amount, Long userId) {
+        return accountRepository.getBalanceByUserId(userId)
                 .zipWith(amount)
                 .flatMap(tuple -> {
                     BigDecimal currentBalance = tuple.getT1();
@@ -44,8 +44,8 @@ public class PaymentService {
                                 )
                         );
                     }
-                    return accountRepository.withdraw(payAmount, username)
-                            .then(accountRepository.getBalanceByUsername(username));
+                    return accountRepository.withdraw(payAmount, userId)
+                            .then(accountRepository.getBalanceByUserId(userId));
                 });
     }
 }

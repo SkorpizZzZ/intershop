@@ -3,6 +3,7 @@ package org.example.intershop.client;
 import org.example.intershop.dto.HealthStatus;
 import org.example.intershop.exception.PaymentException;
 import org.example.intershop.security.service.SecurityService;
+import org.example.intershop.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -24,6 +25,7 @@ public class HttpPaymentClient {
     private final WebClient client = WebClient.create();
     private final ReactiveOAuth2AuthorizedClientManager manager;
     private final SecurityService securityService;
+    private final UserService userService;
 
 
     private final String paymentPort;
@@ -33,12 +35,13 @@ public class HttpPaymentClient {
     private final String clientId;
 
     public HttpPaymentClient(
-            ReactiveOAuth2AuthorizedClientManager manager, SecurityService securityService,
+            ReactiveOAuth2AuthorizedClientManager manager,
+            SecurityService securityService,
             @Value("${submodule.server.payment.port}") String paymentPort,
             @Value("${submodule.server.payment.host}") String paymentHost,
             @Value("${spring.webflux.base-path}") String basePath,
-            @Value("${spring.security.oauth2.client.registration.yandex-store.client-id}") String clientId
-    ) {
+            @Value("${spring.security.oauth2.client.registration.yandex-store.client-id}") String clientId,
+            UserService userService) {
         this.manager = manager;
         this.securityService = securityService;
         this.paymentPort = paymentPort;
@@ -47,13 +50,14 @@ public class HttpPaymentClient {
         this.clientId = clientId;
         this.paymentUrl = String.format("http://%s:%s/%s/payment",
                 paymentHost, paymentPort, basePath);
+        this.userService = userService;
     }
 
     public Mono<BigDecimal> pay(BigDecimal amount) {
-        return securityService.getUsername()
-                .flatMap(username -> getToken()
+        return userService.getId()
+                .flatMap(id -> getToken()
                         .flatMap(accessToken -> client.post()
-                                .uri(paymentUrl + "/balance/{username}", username)
+                                .uri(paymentUrl + "/balance/{userId}", id)
                                 .headers(httpHeaders -> httpHeaders.setBearerAuth(accessToken))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(amount)
@@ -70,10 +74,10 @@ public class HttpPaymentClient {
     }
 
     public Mono<BigDecimal> getBalance() {
-        return securityService.getUsername()
-                .flatMap(username -> getToken()
+        return userService.getId()
+                .flatMap(id -> getToken()
                         .flatMap(accessToken -> client.get()
-                                .uri(paymentUrl + "/balance/{username}", username)
+                                .uri(paymentUrl + "/balance/{userId}", id)
                                 .headers(httpHeaders -> httpHeaders.setBearerAuth(accessToken))
                                 .retrieve()
                                 .bodyToMono(BigDecimal.class)
@@ -98,11 +102,12 @@ public class HttpPaymentClient {
     }
 
     private Mono<String> getToken() {
-        return manager.authorize(OAuth2AuthorizeRequest
-                        .withClientRegistrationId(clientId)
-                        .principal("system")
-                        .build())
-                .map(OAuth2AuthorizedClient::getAccessToken)
-                .map(OAuth2AccessToken::getTokenValue);
+        return securityService.getUsername()
+                .flatMap(username -> manager.authorize(OAuth2AuthorizeRequest
+                                .withClientRegistrationId(clientId)
+                                .principal(username)
+                                .build())
+                        .map(OAuth2AuthorizedClient::getAccessToken)
+                        .map(OAuth2AccessToken::getTokenValue));
     }
 }

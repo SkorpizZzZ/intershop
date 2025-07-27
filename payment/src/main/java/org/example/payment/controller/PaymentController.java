@@ -19,15 +19,15 @@ public class PaymentController implements DefaultApi {
     private final PaymentService paymentService;
 
     @Override
-    public Mono<ResponseEntity<BigDecimal>> balanceUsernameGet(String username, ServerWebExchange exchange) {
-        return paymentService.getBalance(username)
+    public Mono<ResponseEntity<BigDecimal>> balanceUserIdGet(Long userId, ServerWebExchange exchange) {
+        return paymentService.getBalance(userId)
                         .map(balance -> ResponseEntity.ok()
                                 .body(balance));
     }
 
     @Override
-    public Mono<ResponseEntity<BigDecimal>> balanceUsernamePost(String username, Mono<BigDecimal> amount, ServerWebExchange exchange) {
-        return paymentService.pay(amount, username)
+    public Mono<ResponseEntity<BigDecimal>> balanceUserIdPost(Long userId, Mono<BigDecimal> amount, ServerWebExchange exchange) {
+        return paymentService.pay(amount, userId)
                         .map(response -> ResponseEntity.ok()
                                 .body(response));
     }
