@@ -98,11 +98,15 @@ public class HttpPaymentClient {
     }
 
     private Mono<String> getToken() {
-        return manager.authorize(OAuth2AuthorizeRequest
-                        .withClientRegistrationId(clientId)
-                        .principal("system")
-                        .build())
-                .map(OAuth2AuthorizedClient::getAccessToken)
-                .map(OAuth2AccessToken::getTokenValue);
+        return securityService.getUsername()
+                        .flatMap(username ->
+                            manager.authorize(OAuth2AuthorizeRequest
+                                            .withClientRegistrationId(clientId)
+                                            .principal("system")
+                                            .attribute("username", username)
+                                            .attribute("preferred_username", username)
+                                            .build())
+                                    .map(OAuth2AuthorizedClient::getAccessToken)
+                                    .map(OAuth2AccessToken::getTokenValue));
     }
 }
